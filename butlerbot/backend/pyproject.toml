@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "butlerbot"
+version = "0.1.0"
+description = ""
+authors = ["sahilkotak <40324523+sahilkotak@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+openai = ">=0.28.0,<0.29.0"
+fastapi = ">=0.103.1,<0.104.0"
+gtts = ">=2.3.2,<2.4.0"
+python-multipart = ">=0.0.6,<0.1.0"
+ffmpeg-python = ">=0.2.0,<0.3.0"
+pydantic = ">=2.3.0,<2.4.0"
+uvicorn = ">=0.23.2,<0.24.0"
+pydub = ">=0.25.1,<0.26.0"
+requests = ">=2.31.0,<2.32.0"
+google-cloud-speech = "^2.21.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
