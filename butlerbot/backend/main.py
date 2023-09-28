@@ -8,12 +8,46 @@ from fastapi.responses import FileResponse
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
+
 from ai import get_completion
 from stt import transcribe
 from tts import to_speech
 
+# Import the FastAPI app from my_api.py
+from my_api import app as my_api_app
+from create_customer import create_square_customer
+
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
+
+# Mount the my_api app under a subpath, e.g., /myapi
+app.mount("/test", my_api_app)
+
+@app.post("/create-customer")
+def create_customer():
+    customer_data = {
+    "given_name": "ramesh",
+    "family_name": "aryal",
+    "email_address": "ramesharyal@socoro.com.au",
+    "company_name": "socoro pty ltd",
+    "idempotency_key": "fe5a8692-3f14-4f45-be15-c8e51f54687a",
+    "nickname": "None",
+    "note": "No note",
+    "birthday": "2002-10-02"
+  }
+
+    try:
+        # Create a customer using the function
+        customer_id = create_square_customer("EAAAEIQBQf7_4FQj3x63wAB_3ZkLFCRMuSNLthpcMADFzgKzHBPxl2dZNMCVzCdZ", customer_data)
+        print (customer_id, "cssadfasl;d;fl")
+        if customer_id:
+            return {"message": f"Customer created with ID: {customer_id}"}
+        else:
+            return {"error": "Failed to create customer."}
+
+    except Exception as e:
+        print(f"Error creating customer: {e}")
+        return {"error": e}
 
 
 @app.post("/inference")
@@ -36,7 +70,7 @@ async def root():
     return RedirectResponse(url="/index.html")
 
 
-app.mount("/", StaticFiles(directory="frontend/dist"), name="static")
+# app.mount("/", StaticFiles(directory="frontend/dist"), name="static")
 
 
 def _construct_response_header(user_prompt, ai_response):
