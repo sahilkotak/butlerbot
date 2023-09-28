@@ -5,46 +5,46 @@ import logging
 from fastapi import FastAPI, UploadFile, BackgroundTasks, Header
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+import uvicorn
 
 from my_api import app as my_api_app
+from create_customer import get_authorization_code, create_square_customer
+from get_catalog import get_catalog_items
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
 
-# Mount the my_api app under a subpath, e.g., /test
+client_id = "sq0idp-6aYBSQ_b6TCjM0iJ2viLFw"
+redirect_uri = "https://ntibnportal.powerappsportals.com/"
+
 app.mount("/test", my_api_app)
 
-from create_customer import get_authorization_code, create_square_customer  # Import these functions
+@app.get("/products")
+async def list_catalog_items():
+    try:
+        authorization_code = get_authorization_code(client_id, redirect_uri, "ITEMS_READ")
+        catalog_items = get_catalog_items(authorization_code)
+        return {"catalog_items": catalog_items}
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.post("/create-customer")
 async def authorize_and_create_customer():
     try:
-
-        client_id = "sq0idp-6aYBSQ_b6TCjM0iJ2viLFw"
-        redirect_uri = "https://ntibnportal.powerappsportals.com/"
-
         authorization_code = get_authorization_code(client_id, redirect_uri, "CUSTOMERS_WRITE")
-        print("authorization_code", authorization_code)
-
         customer_id = create_square_customer(authorization_code)
-        print(f"Access Token: {customer_id}")
-        
-        return {"message": "Customer created successfully.", "customer_id": customer_id}  # Optionally, return a response to the client
+        return {"message": "Customer created successfully.", "customer_id": customer_id}
     except Exception as e:
-        return {"error": str(e)}  # Handle exceptions and return an error response if needed
+        return {"error": str(e)}
 
 @app.post("/inference")
-async def infer(audio: UploadFile, background_tasks: BackgroundTasks,
-                conversation: str = Header(default=None)) -> FileResponse:
+async def infer(audio: UploadFile, background_tasks: BackgroundTasks, conversation: str = Header(default=None)) -> FileResponse:
     logging.debug("received request")
     start_time = time.time()
-
     user_prompt_text = await transcribe(audio)
     ai_response_text = await get_completion(user_prompt_text, conversation)
     ai_response_audio_filepath = await to_speech(ai_response_text, background_tasks)
-
     logging.info('total processing time: %s %s', time.time() - start_time, 'seconds')
-    
     return FileResponse(
         path=ai_response_audio_filepath,
         media_type="audio/mpeg",
