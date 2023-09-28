@@ -1,6 +1,7 @@
 import requests
 import json
 import webbrowser
+import os
 
 def get_authorization_code(client_id, redirect_uri, scope):
     authorization_url = f"https://connect.squareup.com/oauth2/authorize?client_id={client_id}&scope={scope}&redirect_uri={redirect_uri}&response_type=code"
@@ -17,11 +18,10 @@ def create_square_customer(authorization_code):
     token_url = "https://connect.squareup.com/oauth2/token"
 
     token_data = {
-        "client_id": "sq0idp-6aYBSQ_b6TCjM0iJ2viLFw",
-        "client_secret": "sq0csp-CusXW-fZIE25jo29D-GjUNa6dwPOZ02NiIjLKltrjbQ",
+        "client_id": os.environ.get("client_id"),
+        "client_secret": os.environ.get("client_secret"),
         "code": authorization_code,
-        # "redirect_uri": "http://localhost:8000/test",
-        "redirect_uri": "https://ntibnportal.powerappsportals.com/",
+        "redirect_uri": os.environ.get("REDIRECT_URL"),
         "grant_type": "authorization_code",
     }
 

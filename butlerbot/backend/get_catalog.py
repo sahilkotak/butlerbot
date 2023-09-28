@@ -1,18 +1,17 @@
 import requests
+import os
 
 def get_catalog_items(authorization_code):
     token_url = "https://connect.squareup.com/oauth2/token"
 
     # Token request data
     token_data = {
-        "client_id": "sq0idp-6aYBSQ_b6TCjM0iJ2viLFw",
-        "client_secret": "sq0csp-CusXW-fZIE25jo29D-GjUNa6dwPOZ02NiIjLKltrjbQ",
+        "client_id": os.environ.get("client_id"),
+        "client_secret": os.environ.get("client_secret"),
         "code": authorization_code,
-        "redirect_uri": "https://ntibnportal.powerappsportals.com/",
+        "redirect_uri": os.environ.get("REDIRECT_URL"),
         "grant_type": "authorization_code",
     }
-
-   
 
     # Square Catalog API endpoint
     catalog_url = "https://connect.squareup.com/v2/catalog/list"

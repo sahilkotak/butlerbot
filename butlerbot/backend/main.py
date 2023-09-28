@@ -2,10 +2,14 @@ import base64
 import json
 import time
 import logging
+import os
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI, UploadFile, BackgroundTasks, Header
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 import uvicorn
+
 
 from my_api import app as my_api_app
 from create_customer import get_authorization_code, create_square_customer
@@ -14,8 +18,8 @@ from get_catalog import get_catalog_items
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
 
-client_id = "sq0idp-6aYBSQ_b6TCjM0iJ2viLFw"
-redirect_uri = "https://ntibnportal.powerappsportals.com/"
+client_id = os.environ.get("client_id")
+redirect_uri = os.environ.get("REDIRECT_URL")
 
 app.mount("/test", my_api_app)
 
