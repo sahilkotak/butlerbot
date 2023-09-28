@@ -1,2 +1,3 @@
 # butlerbot
-ButlerBot - AI Drive-through assistant
+
+ButlerBot - AI drive-through assistant
