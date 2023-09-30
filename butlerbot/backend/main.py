@@ -2,44 +2,34 @@ import base64
 import json
 import time
 import logging
-import os
-from dotenv import load_dotenv
-load_dotenv()
 from fastapi import FastAPI, UploadFile, BackgroundTasks, Header
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 
+from fastapi.middleware.cors import CORSMiddleware
 
 from my_api import app as my_api_app
-from create_customer import get_authorization_code, create_square_customer
-from get_catalog import get_catalog_items
+from SquareAPI.square_api import app as square_api_app
 
 app = FastAPI()
+access_tokens ={}
 logging.basicConfig(level=logging.INFO)
+origins = [
+    # "https://076d-125-168-79-45.ngrok-free.app",
+    "http://localhost:5174"
+]
 
-client_id = os.environ.get("client_id")
-redirect_uri = os.environ.get("REDIRECT_URL")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+)
 
 app.mount("/test", my_api_app)
-
-@app.get("/products")
-async def list_catalog_items():
-    try:
-        authorization_code = get_authorization_code(client_id, redirect_uri, "ITEMS_READ")
-        catalog_items = get_catalog_items(authorization_code)
-        return {"catalog_items": catalog_items}
-    except Exception as e:
-        return {"error": str(e)}
-
-@app.post("/create-customer")
-async def authorize_and_create_customer():
-    try:
-        authorization_code = get_authorization_code(client_id, redirect_uri, "CUSTOMERS_WRITE")
-        customer_id = create_square_customer(authorization_code)
-        return {"message": "Customer created successfully.", "customer_id": customer_id}
-    except Exception as e:
-        return {"error": str(e)}
+app.mount("/square/", square_api_app)
 
 @app.post("/inference")
 async def infer(audio: UploadFile, background_tasks: BackgroundTasks, conversation: str = Header(default=None)) -> FileResponse:
