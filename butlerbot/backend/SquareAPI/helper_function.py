@@ -3,6 +3,11 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 import uuid
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)  # Set the desired logging level (INFO, DEBUG, ERROR, etc.)
+logger = logging.getLogger(__name__)
 
 BASE_URL=os.environ.get("BASE_URL")
 
@@ -32,6 +37,8 @@ def get_catalog_items(access_token):
 def create_square_customer(access_token):
     try:
         create_customer_url = "{BASE_URL}v2/customers"
+        list_locations_url = "{BASE_URL}v2/locations"
+
         headers = {
             'Authorization': f'Bearer {access_token}',
             'Content-Type': 'application/json',
@@ -55,11 +62,12 @@ def create_square_customer(access_token):
 # create payment link helper function
 def create_payment_link(access_token):
     checkout_api_url = f"{BASE_URL}v2/online-checkout/payment-links"
+    list_locations_url = f"{BASE_URL}v2/locations"
 
     headers = {
         'Authorization': f'Bearer {access_token}',
         'Content-Type': 'application/json',
-        'Square-Version': "2023-09-25"
+        'Square-Version': os.environ.get("API_VERSION")
     }
 
     payment_link_data = {
@@ -75,12 +83,12 @@ def create_payment_link(access_token):
             "enable_coupon": False,
             "enable_loyalty": False,
             "merchant_support_email": "test@test.com",
-            "redirect_url": "http://localhost:5173/"
+            "redirect_url": os.environ.get("REDIRECT_URL")
         },
         "description": "No description for now!",
         "idempotency_key": str(uuid.uuid4()),
         "quick_pay": {
-            "location_id": "LKQPBYW0VFN58",
+            "location_id": "",  # Will be replaced after obtaining the location response
             "name": "Ramesh",
             "price_money": {
                 "amount": 1250,
@@ -88,17 +96,37 @@ def create_payment_link(access_token):
             }
         }
     }
+
     try:
-        response = requests.post(checkout_api_url, json=payment_link_data, headers=headers)
-        response_data = response.json()
-        checkout_url = response_data.get('payment_link', {}).get('long_url')
-        if checkout_url:
-            print("Payment link created successfully!")
-            print("Checkout URL:", checkout_url)
-            return {"checkout_url": checkout_url}
+        locations_response = requests.get(list_locations_url, headers=headers)
+        locations_response.raise_for_status()  # Raise an HTTPError for bad requests (4xx and 5xx responses)
+        location_response = locations_response.json().get('locations')
+
+        if location_response:
+            location_id = location_response[0]['id']
+            payment_link_data['quick_pay']['location_id'] = location_id
+
+            response = requests.post(checkout_api_url, json=payment_link_data, headers=headers)
+            response.raise_for_status()  # Raise an HTTPError for bad requests (4xx and 5xx responses)
+
+            response_data = response.json()
+            checkout_url = response_data.get('payment_link', {}).get('long_url')
+
+            if checkout_url:
+                print("Payment link created successfully!")
+                return {
+                    "location": location_response[0], 
+                    "payment_info": response_data,  
+                    "checkout_url": checkout_url
+                }
+            else:
+                print("Failed to create payment link.")
+                print(response_data)
         else:
-            print("Failed to create payment link.")
-            print(response_data)
+            print("No locations found in the response.")
+
+    except requests.exceptions.HTTPError as err:
+        print(f"HTTP error occurred: {err}")
     except Exception as e:
         print("Error occurred while creating payment link.")
         print(e)
