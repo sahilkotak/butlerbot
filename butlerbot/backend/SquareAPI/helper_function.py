@@ -33,30 +33,7 @@ def get_catalog_items(access_token):
         raise Exception(f"Error fetching catalog items: {e}")
     
 
-# create square customer link
-def create_square_customer(access_token):
-    try:
-        create_customer_url = "{BASE_URL}v2/customers"
-        list_locations_url = "{BASE_URL}v2/locations"
 
-        headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json',
-            'Square-Version': '2023-09-25'
-        }
-        customer_data = {
-            "given_name": "Ramesh",
-            "family_name": "Aryal",
-            "email_address": "ramesh.aryal@socoro.com.au",
-        }
-        response = requests.post(create_customer_url, headers=headers, data=json.dumps(customer_data))
-        response.raise_for_status()
-
-        customer_info = response.json()
-        customer_id = customer_info['customer']['id']
-        return customer_id  # You may return other relevant information if needed
-    except Exception as e:
-        raise Exception(f"Error creating customer: {e}")
     
 
 # create payment link helper function
@@ -130,3 +107,27 @@ def create_payment_link(access_token):
     except Exception as e:
         print("Error occurred while creating payment link.")
         print(e)
+
+# create square customer link
+def create_square_customer(access_token):
+    try:
+        create_customer_url = "{BASE_URL}v2/customers"
+
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json',
+            'Square-Version': '2023-09-25'
+        }
+        customer_data = {
+            "given_name": "Ramesh",
+            "family_name": "Aryal",
+            "email_address": "ramesh.aryal@socoro.com.au",
+        }
+        response = requests.post(create_customer_url, headers=headers, data=json.dumps(customer_data))
+        response.raise_for_status()
+
+        customer_info = response.json()
+        customer_id = customer_info['customer']['id']
+        return customer_id  # You may return other relevant information if needed
+    except Exception as e:
+        raise Exception(f"Error creating customer: {e}")
