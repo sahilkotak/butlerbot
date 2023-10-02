@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "butlerbot"
 version = "0.1.0"
-description = ""
-authors = ["sahilkotak <40324523+sahilkotak@users.noreply.github.com>"]
+description = "An AI drive-through assistant"
+authors = ["sahilkotak <40324523+sahilkotak@users.noreply.github.com>", "kevin patel <kevinmanojpatel@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -17,6 +17,8 @@ uvicorn = ">=0.23.2,<0.24.0"
 pydub = ">=0.25.1,<0.26.0"
 requests = ">=2.31.0,<2.32.0"
 google-cloud-speech = "^2.21.0"
+squareup = "^31.0.0.20230925"
+boto3 = "^1.28.57"
 
 
 [build-system]

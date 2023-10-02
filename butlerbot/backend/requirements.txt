@@ -7,3 +7,5 @@ pydantic~=2.3.0
 uvicorn~=0.23.2
 pydub~=0.25.1
 requests~=2.31.0
+squareup~=31.0.0.20230925
+boto3~=1.28.57
