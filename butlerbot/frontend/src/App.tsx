@@ -70,8 +70,11 @@ const App = () => {
   };
 
   const getAuthorizationKey = async () => {
-    await axios.get("http://127.0.0.1:8000/square/authorization-url/");
-    console.log("Check your browser to authorize your account");
+    const response = await axios.get(
+      "http://127.0.0.1:8000/square/authorization-url/"
+    );
+
+    window.location.replace(response.data.authorizationUrl);
   };
 
   useEffect(() => {

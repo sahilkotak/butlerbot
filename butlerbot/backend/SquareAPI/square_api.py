@@ -23,10 +23,7 @@ scope=os.environ.get("scope")
 @app.get("/authorization-url/")
 async def getAuthorization():
     authorizationUrl = f"https://connect.squareupsandbox.com/oauth2/authorize?client_id={client_id}&scope={scope}&redirect_uri={redirect_uri}&response_type=code"
-    
-    webbrowser.open(authorizationUrl)
-
-    return {"success": "The URL is triggered"}
+    return {"authorizationUrl": authorizationUrl}
 
 @app.post("/authorization/")
 async def getAuthorization(authorization: str = Query(default=None)):
@@ -81,6 +78,7 @@ async def create_checkout_link(user_id: str):
         error_response = {"error": "Unauthorized"}
         return JSONResponse(content=error_response, status_code=400)
     try:
+
         payment_link = create_payment_link(access_token)
         return {"payment_link": payment_link}
     except Exception as e:
