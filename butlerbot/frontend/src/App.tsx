@@ -57,10 +57,12 @@ const App = () => {
   };
 
   const getAuthorizationKey = async () => {
-    const client_id = "sandbox-sq0idb-vvZY6w8UoVogVaZ7FbUH9A";
+    const client_id =
+      process.env.CLIENT_ID || "sandbox-sq0idb-vvZY6w8UoVogVaZ7FbUH9A";
     const scope =
+      process.env.SCOPE ||
       "ITEMS_READ PAYMENTS_WRITE MERCHANT_PROFILE_READ ORDERS_WRITE ORDERS_READ PAYMENTS_WRITE CUSTOMERS_WRITE CUSTOMERS_READ PAYMENTS_WRITE PAYMENTS_READ PAYMENTS_WRITE PAYMENTS_READ";
-    const REDIRECT_URL = "http://localhost:5174/";
+    const REDIRECT_URL = process.env.REDIRECT_URL || "http://localhost:5173/";
     const authorizationUrl = `https://connect.squareupsandbox.com/oauth2/authorize?client_id=${client_id}&scope=${scope}&redirect_uri=${REDIRECT_URL}&response_type=code`;
     window.location.href = authorizationUrl;
   };

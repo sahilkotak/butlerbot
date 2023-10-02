@@ -1,6 +1,8 @@
 import requests
 import os
+import json
 from dotenv import load_dotenv
+
 load_dotenv()
 
 def get_catalog_items(access_token):

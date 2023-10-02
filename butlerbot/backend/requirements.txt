@@ -7,4 +7,6 @@ pydantic~=2.3.0
 uvicorn~=0.23.2
 pydub~=0.25.1
 requests~=2.31.0
-python-dotenv  
+python-dotenv
+boto3~=1.11.11
+squareup~=22.0.0.20220921
