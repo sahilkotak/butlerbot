@@ -7,6 +7,7 @@ const App = () => {
   const [audioReady, setAudioReady] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [userId, setUserId] = useState(null);
+
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
 
@@ -56,6 +57,18 @@ const App = () => {
     }
   };
 
+  const createCheckoutLink = async () => {
+    try {
+      const response = await axios.post(
+        `http://127.0.0.1:8000/square/checkout/?user_id=${userId}`
+      );
+      console.log(response.data.payment_link.checkout_url);
+      window.open(response.data.payment_link.checkout_url);
+    } catch (error) {
+      console.log(error.message || "An error occurred while fetching data.");
+    }
+  };
+
   const getAuthorizationKey = async () => {
     const client_id =
       process.env.CLIENT_ID || "sandbox-sq0idb-vvZY6w8UoVogVaZ7FbUH9A";
@@ -91,7 +104,6 @@ const App = () => {
       };
       fetchTokens();
     }
-
     // eslint-disable-next-line
   }, []);
 
@@ -113,20 +125,36 @@ const App = () => {
           Authorize Square Account
         </div>
       ) : (
-        <div
-          style={{
-            padding: "4rem",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            color: "white",
-            fontSize: "30px",
-            cursor: "pointer",
-          }}
-          onClick={getProducts}
-        >
-          Get Products
-        </div>
+        <>
+          <div
+            style={{
+              padding: "4rem",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "white",
+              fontSize: "30px",
+              cursor: "pointer",
+            }}
+            onClick={getProducts}
+          >
+            Get Products
+          </div>
+          <div
+            style={{
+              padding: "4rem",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "white",
+              fontSize: "30px",
+              cursor: "pointer",
+            }}
+            onClick={createCheckoutLink}
+          >
+            Make A Payment
+          </div>
+        </>
       )}
 
       <div

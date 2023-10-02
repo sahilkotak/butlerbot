@@ -4,9 +4,17 @@ import json
 from dotenv import load_dotenv
 
 load_dotenv()
+import uuid
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)  # Set the desired logging level (INFO, DEBUG, ERROR, etc.)
+logger = logging.getLogger(__name__)
+
+BASE_URL=os.environ.get("BASE_URL")
 
 def get_catalog_items(access_token):
-    catalog_url = "https://connect.squareupsandbox.com/v2/catalog/list"
+    catalog_url = f"{BASE_URL}v2/catalog/list"
 
     try:
          # Headers for API requests
@@ -27,14 +35,90 @@ def get_catalog_items(access_token):
         raise Exception(f"Error fetching catalog items: {e}")
     
 
+
+    
+
+# create payment link helper function
+def create_payment_link(access_token):
+    checkout_api_url = f"{BASE_URL}v2/online-checkout/payment-links"
+    list_locations_url = f"{BASE_URL}v2/locations"
+
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Content-Type': 'application/json',
+        'Square-Version': os.environ.get("API_VERSION")
+    }
+
+    payment_link_data = {
+        "checkout_options": {
+            "allow_tipping": False,
+            "ask_for_shipping_address": True,
+            "accepted_payment_methods": {
+                "afterpay_clearpay": True,
+                "apple_pay": True,
+                "cash_app_pay": True,
+                "google_pay": True
+            },
+            "enable_coupon": False,
+            "enable_loyalty": False,
+            "merchant_support_email": "test@test.com",
+            "redirect_url": os.environ.get("REDIRECT_URL")
+        },
+        "description": "No description for now!",
+        "idempotency_key": str(uuid.uuid4()),
+        "quick_pay": {
+            "location_id": "",  # Will be replaced after obtaining the location response
+            "name": "Ramesh",
+            "price_money": {
+                "amount": 1250,
+                "currency": "USD"
+            }
+        }
+    }
+
+    try:
+        locations_response = requests.get(list_locations_url, headers=headers)
+        locations_response.raise_for_status()  # Raise an HTTPError for bad requests (4xx and 5xx responses)
+        location_response = locations_response.json().get('locations')
+
+        if location_response:
+            location_id = location_response[0]['id']
+            payment_link_data['quick_pay']['location_id'] = location_id
+
+            response = requests.post(checkout_api_url, json=payment_link_data, headers=headers)
+            response.raise_for_status()  # Raise an HTTPError for bad requests (4xx and 5xx responses)
+
+            response_data = response.json()
+            checkout_url = response_data.get('payment_link', {}).get('long_url')
+
+            if checkout_url:
+                print("Payment link created successfully!")
+                return {
+                    "location": location_response[0], 
+                    "payment_info": response_data,  
+                    "checkout_url": checkout_url
+                }
+            else:
+                print("Failed to create payment link.")
+                print(response_data)
+        else:
+            print("No locations found in the response.")
+
+    except requests.exceptions.HTTPError as err:
+        print(f"HTTP error occurred: {err}")
+    except Exception as e:
+        print("Error occurred while creating payment link.")
+        print(e)
+
 # create square customer link
 def create_square_customer(access_token):
     try:
-        create_customer_url = 'https://connect.squareupsandbox.com/v2/customers'
+        create_customer_url = "{BASE_URL}v2/customers"
+
         headers = {
             'Authorization': f'Bearer {access_token}',
             'Content-Type': 'application/json',
-            'Square-Version': '2023-08-16'
+            'Square-Version': '2023-09-25'
         }
         customer_data = {
             "given_name": "Ramesh",
@@ -49,62 +133,3 @@ def create_square_customer(access_token):
         return customer_id  # You may return other relevant information if needed
     except Exception as e:
         raise Exception(f"Error creating customer: {e}")
-    
-
-# create payment link helper function
-def create_payment_link(authorization_code):
-    token_url = "https://connect.squareupsandbox.com/oauth2/token"
-
-    token_data = {
-        "client_id": os.environ.get("client_id"),
-        "client_secret": os.environ.get("client_secret"),
-        "code": authorization_code,
-        "redirect_uri": os.environ.get("REDIRECT_URL"),
-        "grant_type": "authorization_code",
-    }
-
-    list_locations_url = "https://connect.squareupsandbox.com/v2/locations"
-    
-    try:
-
-        token_response = requests.post(token_url, data=token_data)
-        token_response.raise_for_status()
-        access_token = token_response.json()["access_token"]
-        print(f"Access Token: {access_token}")
-
-        headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json',
-        }
-
-        response = requests.get(list_locations_url, headers=headers)
-        response.raise_for_status()
-
-        locations = response.json()["locations"]
-        location_id = locations[0]['id']
-
-        create_payment_url = f"https://connect.squareupsandbox.com/2023-08-16/locations/{location_id}/checkout/create"
-
-        amount = 1000  
-        currency = "USD"
-
-        payment_request = {
-            "amount_money": {
-                "amount": amount,
-                "currency": currency
-            },
-            "redirect_url": "https://yourwebsite.com/success",  # Replace with your redirect URL
-            "order_id": "order123",  # Replace with your order ID
-            "ask_for_shipping_address": False  # Set to True if you need shipping information
-        }
-
-        response = requests.post(create_payment_url, json=payment_request, headers=headers)
-        response.raise_for_status()
-
-        # Parse the response to get the payment link
-        payment_link = response.json()["checkout"]["checkout_page_url"]
-        print(f"Payment Link: {payment_link}")
-
-        return payment_link
-    except Exception as e:
-        raise Exception(f"Error fetching catalog items: {e}")
