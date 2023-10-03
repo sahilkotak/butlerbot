@@ -1,17 +1,16 @@
 import requests
 import uuid
 import os
-from dotenv import load_dotenv
 import logging
 
 import boto3
 # from .helper_function import create_payment_link, create_square_customer, get_catalog_items
-from square.client import Client
 
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.responses import  JSONResponse
 
-load_dotenv()
+from square.client import Client
+
 app = FastAPI()
 
 # Store access tokens in memory (store in the database for security purpose)
@@ -24,19 +23,19 @@ async def authorise_client(authorization: str = Query(default=None)):
     redirect_uri = os.environ.get("REDIRECT_URL", "http://localhost:5173/")
     state = str(uuid.uuid4())
 
-    result = client.o_auth.authorize(
-        client_id = client_id,
-        scope = scope,
-        locale = "en-US",
-        session = False,
-        state = state,
-        redirect_uri = redirect_uri
-    )
+    # result = client.o_auth.authorize(
+    #     client_id = client_id,
+    #     scope = scope,
+    #     locale = "en-US",
+    #     session = False,
+    #     state = state,
+    #     redirect_uri = redirect_uri
+    # )
 
-    if result.is_success():
-        logging.info(result.body)
-    elif result.is_error():
-        logging.info(result.errors)
+    # if result.is_success():
+    #     logging.info(result.body)
+    # elif result.is_error():
+    #     logging.info(result.errors)
 
     # payload = {
     #     "client_id": client_id,
