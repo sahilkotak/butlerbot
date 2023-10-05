@@ -16,9 +16,9 @@ app = FastAPI()
 access_tokens ={}
 logging.basicConfig(level=logging.INFO)
 origins = [
-    "https://076d-125-168-79-45.ngrok-free.app",
-    "https://0829-125-168-79-45.ngrok-free.app",
-    "http://localhost:5174"
+    "https://34f6-125-168-79-45.ngrok-free.app",
+    "http://localhost:5174",
+    "http://localhost:5173",
 ]
 
 app.add_middleware(

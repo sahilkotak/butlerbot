@@ -7,6 +7,9 @@ load_dotenv()
 from .helper_function import create_payment_link, create_square_customer, get_catalog_items
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.responses import  JSONResponse
+import logging
+
+from square.client import Client
 
 app = FastAPI()
 
@@ -18,11 +21,11 @@ redirect_uri = os.environ.get("REDIRECT_URL")
 API_VERSION = os.environ.get("API_VERSION")
 BASE_URL=os.environ.get("BASE_URL")
 scope=os.environ.get("scope")
-
+ENV=os.environ.get("ENV")
 
 @app.get("/authorization-url/")
 async def getAuthorization():
-    authorizationUrl = f"https://connect.squareupsandbox.com/oauth2/authorize?client_id={client_id}&scope={scope}&redirect_uri={redirect_uri}&response_type=code"
+    authorizationUrl = f"{BASE_URL}oauth2/authorize?client_id={client_id}&scope={scope}&redirect_uri={redirect_uri}&response_type=code"
     return {"authorizationUrl": authorizationUrl}
 
 @app.post("/authorization/")
@@ -65,7 +68,15 @@ async def list_catalog_items(user_id: str):
         error_response = {"error": "Unauthorized"}
         return JSONResponse(content=error_response, status_code=400)
     try:
+        client = Client(
+            access_token=access_token,
+            environment="sandbox",  # Change this to "production" for live data
+        )
+        # result = client.catalog.list_catalog()
+
+        # client.catalog.list_catalog()
         catalog_items = get_catalog_items(access_token)
+    
         return {"catalog_items": catalog_items}
     except Exception as e:
         error_response = {"error": str(e)}

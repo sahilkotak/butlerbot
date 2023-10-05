@@ -32,10 +32,6 @@ def get_catalog_items(access_token):
     except Exception as e:
         raise Exception(f"Error fetching catalog items: {e}")
     
-
-
-    
-
 # create payment link helper function
 def create_payment_link(access_token):
     checkout_api_url = f"{BASE_URL}v2/online-checkout/payment-links"
