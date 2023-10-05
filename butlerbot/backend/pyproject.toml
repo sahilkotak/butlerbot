@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "butlerbot"
 version = "0.1.0"
-description = ""
-authors = ["sahilkotak <40324523+sahilkotak@users.noreply.github.com>"]
+description = "An AI drive-through assistant"
+authors = ["sahilkotak <40324523+sahilkotak@users.noreply.github.com>", "kevin patel <kevinmanojpatel@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
