@@ -7,7 +7,7 @@ const Login = () => {
         onClick={() => {
           // eslint-disable-next-line no-undef
           if (!process.env.BUTLERBOT_API_ENDPOINT)
-            throw new Error(
+            alert(
               "Application not configured properly. Missing required configurations - BUTLERBOT_API_ENDPOINT."
             );
 
