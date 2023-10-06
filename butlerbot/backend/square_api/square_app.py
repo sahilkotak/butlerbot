@@ -4,10 +4,13 @@ import logging
 from http import cookies
 from fastapi.responses import JSONResponse, RedirectResponse
 
+from square.client import Client
 from .oauth_client import conduct_authorize_url, exchange_oauth_tokens
 from .merchant import Merchant
 
 logging.basicConfig(level=logging.INFO)
+
+environment = os.environ.get("ENVIRONMENT", "sandbox")
 
 def authorise():
     '''The endpoint that renders the link to Square authorization page.'''
@@ -82,13 +85,26 @@ async def authorize_callback(query_params, cookie):
             logging.info("Access Token: " + access_token)
 
             try:
-                # TODO: encrypt the refresh_token and access_token before saving to db
+                square_client = Client(
+                    access_token=access_token,
+                    environment=environment,
+                    user_agent_detail='butlerbot_app_python',
+                    max_retries=2,
+                    timeout=60
+                )
+                merchant_details_response = square_client.merchants.retrieve_merchant(
+                    merchant_id = merchant_id
+                )
+                merchant_details = merchant_details_response.body
+                merchant_name = merchant_details["merchant"]["business_name"]
+                merchant_location_id = merchant_details["merchant"]["main_location_id"]
+
                 merchant_obj = {
                     "id": merchant_id,
-                    "business_name": "Not Implemented",
+                    "business_name": merchant_name,
                     "access_token": access_token,
                     "refresh_token": refresh_token,
-                    "main_location_id": "Not Implemented",
+                    "main_location_id": merchant_location_id,
                     "expires_at": expires_at,
                 }
                 merchant = Merchant()
