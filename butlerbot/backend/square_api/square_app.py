@@ -5,6 +5,7 @@ from http import cookies
 from fastapi.responses import JSONResponse, RedirectResponse
 
 from .oauth_client import conduct_authorize_url, exchange_oauth_tokens
+from .merchent import Merchent
 
 logging.basicConfig(level=logging.INFO)
 
@@ -76,7 +77,7 @@ def authorize_callback(query_params, cookie):
             access_token = body['access_token']
             expires_at = body['expires_at']
             merchent_id = body['merchant_id']
-            
+
             logging.info("Refresh Token: " + refresh_token)
             logging.info("Access Token: " + access_token)
             # TODO: encrypt the refresh_token and access_token before saving to db
