@@ -1,5 +1,5 @@
-import base64
 ### TODO: Add CORS origin restriction
+import base64
 
 import json
 import time
@@ -12,10 +12,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from ai import get_completion
 
-from google.stt import transcribe
-from google.tts import to_speech
+from google_api.stt import transcribe
+from google_api.tts import to_speech
 
-from square.square_app import app as square_api_app
+from square_api.square_app import authorise
 
 import uvicorn
 
@@ -33,7 +33,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/square/", square_api_app)
+@app.get("/authorise")
+async def authorise_client():
+    return authorise()
 
 @app.post("/inference")
 async def infer(audio: UploadFile, background_tasks: BackgroundTasks, conversation: str = Header(default=None)) -> FileResponse:
