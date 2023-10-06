@@ -11,7 +11,6 @@ client_id = os.environ.get("CLIENT_ID", "sandbox-sq0idb-vvZY6w8UoVogVaZ7FbUH9A")
 client_secret = os.environ.get("CLIENT_SECRET", "sandbox-sq0csb-zjBrpXqJYoOtYTnuT5l4W_v7egv47BlhN9s8sPvFEfo")
 
 # initialize square oauth client
-logging.info(environment + client_id + client_secret)
 square_client = Client(
     access_token=access_token,
     environment=environment,
@@ -43,11 +42,14 @@ def conduct_authorize_url(state):
     state : str
         The state value that will be verified in the authorizae callback.
     '''
+    base_url = os.environ.get("BASE_URL", "https://connect.squareupsandbox.com")
+    permissions = os.environ.get("PERMISSIONS", "ITEMS_READ PAYMENTS_WRITE MERCHANT_PROFILE_READ ORDERS_WRITE ORDERS_READ PAYMENTS_WRITE CUSTOMERS_WRITE CUSTOMERS_READ PAYMENTS_WRITE PAYMENTS_READ PAYMENTS_WRITE PAYMENTS_READ")
+
     authorize_url = (
-        os.environ['base_url'] + '/oauth2/authorize'
+        base_url + '/oauth2/authorize'
         '?client_id=' + client_id +
-        '&scope=' + os.environ['permissions'] +
-        '&session=' + os.environ['session'] +
+        '&scope=' + permissions +
+        '&session=' + str(environment == 'sandbox2') +
         '&state=' + state
     )
     return authorize_url

@@ -6,7 +6,7 @@ import time
 import logging
 
 from fastapi import FastAPI, UploadFile, BackgroundTasks, Header
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -15,14 +15,14 @@ from ai import get_completion
 from google_api.stt import transcribe
 from google_api.tts import to_speech
 
-from square_api.square_app import authorise
+from square_api.square_app import authorise, authorize_callback
 
 import uvicorn
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
 origins = [
-    "http://localhost:5174"
+    "http://localhost:5173"
 ]
 
 app.add_middleware(
@@ -36,6 +36,26 @@ app.add_middleware(
 @app.get("/authorise")
 async def authorise_client():
     return authorise()
+
+@app.get("/authorise-callback")
+def authorise_callback(
+    code: str = None, 
+    state: str = None, 
+    response_type: str = None,
+    error: str = None,
+    error_description: str = None,
+    cookie: str = Header(None)
+):
+    return authorize_callback(
+        query_params={
+            "code": code,
+            "state": state,
+            "response_type": response_type,
+            "error": error,
+            "error_description": error_description,
+        },
+        cookie=cookie
+    )
 
 @app.post("/inference")
 async def infer(audio: UploadFile, background_tasks: BackgroundTasks, conversation: str = Header(default=None)) -> FileResponse:
