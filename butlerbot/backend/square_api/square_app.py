@@ -5,7 +5,7 @@ from http import cookies
 from fastapi.responses import JSONResponse, RedirectResponse
 
 from .oauth_client import conduct_authorize_url, exchange_oauth_tokens
-from .merchent import Merchent
+from .merchant import Merchant
 
 logging.basicConfig(level=logging.INFO)
 
@@ -27,7 +27,7 @@ def authorise():
         'Set-Cookie': cookie_str
     })
 
-def authorize_callback(query_params, cookie):
+async def authorize_callback(query_params, cookie):
     '''The endpoint that handles Square authorization callback.
 
     The endpoint receives authorization result from the Square authorization page.
@@ -76,12 +76,29 @@ def authorize_callback(query_params, cookie):
             refresh_token = body['refresh_token']
             access_token = body['access_token']
             expires_at = body['expires_at']
-            merchent_id = body['merchant_id']
+            merchant_id = body['merchant_id']
 
             logging.info("Refresh Token: " + refresh_token)
             logging.info("Access Token: " + access_token)
-            # TODO: encrypt the refresh_token and access_token before saving to db
-            return RedirectResponse(url=client_success_url, status_code=302)
+
+            try:
+                # TODO: encrypt the refresh_token and access_token before saving to db
+                merchant_obj = {
+                    "id": merchant_id,
+                    "business_name": "Not Implemented",
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                    "main_location_id": "Not Implemented",
+                    "expires_at": expires_at,
+                }
+                merchant = Merchant()
+                merchant.add_merchant(merchant_obj=merchant_obj)
+                logging.info("New merchant record added.")
+                return RedirectResponse(url=client_success_url, status_code=302)
+            except Exception as e:
+                logging.info("Error: " + str(e))
+                return JSONResponse(content={"error": "Internal Server Error: Unknown Error."}, status_code=500)
+
         elif response.is_error():
             return JSONResponse(content={"error": "Unauthorised: Authorisation failed."}, status_code=400)
     elif 'error' in query_params:

@@ -38,7 +38,7 @@ async def authorise_client():
     return authorise()
 
 @app.get("/authorise-callback")
-def authorise_callback(
+async def authorise_callback(
     code: str = None, 
     state: str = None, 
     response_type: str = None,
@@ -46,7 +46,7 @@ def authorise_callback(
     error_description: str = None,
     cookie: str = Header(None)
 ):
-    return authorize_callback(
+    return await authorize_callback(
         query_params={
             "code": code,
             "state": state,
