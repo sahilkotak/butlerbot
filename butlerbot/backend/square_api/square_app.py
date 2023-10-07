@@ -2,6 +2,7 @@ import os
 import uuid
 import logging
 from http import cookies
+from datetime import datetime, timezone
 from fastapi.responses import JSONResponse, RedirectResponse
 
 from square.client import Client
@@ -21,7 +22,7 @@ def authorise():
     # `HttpOnly` helps mitigate XSS risks and `SameSite` helps mitigate CSRF risks. 
     
     state = str(uuid.uuid4())
-    cookie_str = 'OAuthState={0}; HttpOnly; Max-Age=60; SameSite=Lax'.format(state)
+    cookie_str = 'O-Auth-State={0}; HttpOnly; Max-Age=60; SameSite=Lax'.format(state)
 
     # create the authorize url with the state
     authorise_url = conduct_authorize_url(state)
@@ -29,6 +30,15 @@ def authorise():
         'Content-Type': 'text/html',
         'Set-Cookie': cookie_str
     })
+
+def time_difference_seconds(timestamp_iso):
+    timestamp_datetime = datetime.fromisoformat(timestamp_iso)
+    current_time = datetime.now(timezone.utc)
+
+    time_difference = timestamp_datetime - current_time
+    time_difference_seconds = time_difference.total_seconds()
+
+    return int(time_difference_seconds)
 
 async def authorize_callback(query_params, cookie):
     '''The endpoint that handles Square authorization callback.
@@ -68,7 +78,7 @@ async def authorize_callback(query_params, cookie):
     cookie_state = ''
     if cookie:
         c = cookies.SimpleCookie(cookie)
-        cookie_state = c['OAuthState'].value
+        cookie_state = c['O-Auth-State'].value
     
     if cookie_state == '' or state != cookie_state:
         return JSONResponse(content={"error": "Unauthorised: Invalid request due to invalid auth state."}, status_code=400)
@@ -83,6 +93,7 @@ async def authorize_callback(query_params, cookie):
 
             logging.info("Refresh Token: " + refresh_token)
             logging.info("Access Token: " + access_token)
+            logging.info("Expires at: " + expires_at)
 
             try:
                 square_client = Client(
@@ -110,7 +121,19 @@ async def authorize_callback(query_params, cookie):
                 merchant = Merchant()
                 merchant.add_merchant(merchant_obj=merchant_obj)
                 logging.info("New merchant record added.")
-                return RedirectResponse(url=client_success_url, status_code=302)
+
+                cookie_str = 'X-ButlerBot-Active-Session-Token={0}; HttpOnly; Max-Age={1}; SameSite=Lax'.format(
+                    access_token, 
+                    time_difference_seconds(expires_at)
+                )
+                return RedirectResponse(
+                    url=client_success_url, 
+                    status_code=302,
+                    headers={
+                        'Content-Type': 'text/html',
+                        'Set-Cookie': cookie_str
+                    }
+                )
             except Exception as e:
                 logging.info("Error: " + str(e))
                 return JSONResponse(content={"error": "Internal Server Error: Unknown Error."}, status_code=500)
