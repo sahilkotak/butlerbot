@@ -1,33 +1,43 @@
-import { useState } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+// import { useState } from "react";
+import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 
-import ErrorPage from "./Error.tsx";
-import { Home, Login, SquareConnectionRegisterer } from "./pages";
+// import Error from "./Error";
+import RegisterCookie from "./RegisterCookie";
+import { Home, Login } from "./pages";
+
+// const router = createBrowserRouter(
+//   createRoutesFromElements(
+//     <Route path="/setup" element={<Error />}>
+//       <Route path=":id" element={<RegisterCookie />} />
+//     </Route>
+//   )
+// );
 
 const App = () => {
-  const [userLogInStatus, setUserLoginStatus] = useState(false);
+  // const [userLogInStatus, setUserLoginStatus] = useState(false);
 
-  const registerLoggedInUser = () => {
-    setUserLoginStatus(true);
-  };
+  // // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // const registerLoggedInUser = () => {
+  //   setUserLoginStatus(true);
+  // };
 
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: !userLogInStatus ? <Login /> : <Home />,
-      errorElement: <ErrorPage />,
-    },
-    {
-      path: "square-setup",
-      element: (
-        <SquareConnectionRegisterer
-          registerUserHandler={registerLoggedInUser}
-        />
-      ),
-    },
-  ]);
-
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <Router>
+        <Switch>
+          <Route path="/login">
+            <Login />
+          </Route>
+          <Route path="/setup/:cookie">
+            <RegisterCookie />
+          </Route>
+          <Route path="/" exact>
+            <Home />
+          </Route>
+        </Switch>
+      </Router>
+    </>
+  );
 };
 
 export default App;

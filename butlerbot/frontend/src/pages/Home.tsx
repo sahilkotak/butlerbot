@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "react-bootstrap";
 
 import { onSpeechStart, onSpeechEnd } from "../utils/speech-manager";
@@ -51,10 +52,19 @@ const Home = () => {
           width: "100vw",
         }}
       >
-        <Button onClick={startRecording}>Start</Button>
-        <Button onClick={stopRecording}>End</Button>
+        <div>
+          <Link to="/login">Login</Link>
+          <Link to="/setup/AADK124243432">Setup Cookie</Link>
+        </div>
 
-        {audioReady && <audio controls src={URL.createObjectURL(audioBlob)} />}
+        <div>
+          <Button onClick={startRecording}>Start</Button>
+          <Button onClick={stopRecording}>End</Button>
+
+          {audioReady && (
+            <audio controls src={URL.createObjectURL(audioBlob)} />
+          )}
+        </div>
       </div>
     </>
   );

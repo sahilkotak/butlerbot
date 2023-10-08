@@ -2,12 +2,16 @@ import os
 import uuid
 import logging
 from http import cookies
+from datetime import datetime, timezone
 from fastapi.responses import JSONResponse, RedirectResponse
 
+from square.client import Client
 from .oauth_client import conduct_authorize_url, exchange_oauth_tokens
 from .merchant import Merchant
 
 logging.basicConfig(level=logging.INFO)
+
+environment = os.environ.get("ENVIRONMENT", "sandbox")
 
 def authorise():
     '''The endpoint that renders the link to Square authorization page.'''
@@ -18,7 +22,7 @@ def authorise():
     # `HttpOnly` helps mitigate XSS risks and `SameSite` helps mitigate CSRF risks. 
     
     state = str(uuid.uuid4())
-    cookie_str = 'OAuthState={0}; HttpOnly; Max-Age=60; SameSite=Lax'.format(state)
+    cookie_str = 'O-Auth-State={0}; HttpOnly; Max-Age=60; SameSite=Lax'.format(state)
 
     # create the authorize url with the state
     authorise_url = conduct_authorize_url(state)
@@ -26,6 +30,15 @@ def authorise():
         'Content-Type': 'text/html',
         'Set-Cookie': cookie_str
     })
+
+def time_difference_seconds(timestamp_iso):
+    timestamp_datetime = datetime.fromisoformat(timestamp_iso)
+    current_time = datetime.now(timezone.utc)
+
+    time_difference = timestamp_datetime - current_time
+    time_difference_seconds = time_difference.total_seconds()
+
+    return int(time_difference_seconds)
 
 async def authorize_callback(query_params, cookie):
     '''The endpoint that handles Square authorization callback.
@@ -65,7 +78,7 @@ async def authorize_callback(query_params, cookie):
     cookie_state = ''
     if cookie:
         c = cookies.SimpleCookie(cookie)
-        cookie_state = c['OAuthState'].value
+        cookie_state = c['O-Auth-State'].value
     
     if cookie_state == '' or state != cookie_state:
         return JSONResponse(content={"error": "Unauthorised: Invalid request due to invalid auth state."}, status_code=400)
@@ -80,21 +93,47 @@ async def authorize_callback(query_params, cookie):
 
             logging.info("Refresh Token: " + refresh_token)
             logging.info("Access Token: " + access_token)
+            logging.info("Expires at: " + expires_at)
 
             try:
-                # TODO: encrypt the refresh_token and access_token before saving to db
+                square_client = Client(
+                    access_token=access_token,
+                    environment=environment,
+                    user_agent_detail='butlerbot_app_python',
+                    max_retries=2,
+                    timeout=60
+                )
+                merchant_details_response = square_client.merchants.retrieve_merchant(
+                    merchant_id = merchant_id
+                )
+                merchant_details = merchant_details_response.body
+                merchant_name = merchant_details["merchant"]["business_name"]
+                merchant_location_id = merchant_details["merchant"]["main_location_id"]
+
                 merchant_obj = {
                     "id": merchant_id,
-                    "business_name": "Not Implemented",
+                    "business_name": merchant_name,
                     "access_token": access_token,
                     "refresh_token": refresh_token,
-                    "main_location_id": "Not Implemented",
+                    "main_location_id": merchant_location_id,
                     "expires_at": expires_at,
                 }
                 merchant = Merchant()
                 merchant.add_merchant(merchant_obj=merchant_obj)
                 logging.info("New merchant record added.")
-                return RedirectResponse(url=client_success_url, status_code=302)
+
+                cookie_str = 'X-ButlerBot-Active-Session-Token={0}; HttpOnly; Max-Age={1}; SameSite=Lax'.format(
+                    access_token, 
+                    time_difference_seconds(expires_at)
+                )
+                return RedirectResponse(
+                    url=client_success_url, 
+                    status_code=302,
+                    headers={
+                        'Content-Type': 'text/html',
+                        'Set-Cookie': cookie_str
+                    }
+                )
             except Exception as e:
                 logging.info("Error: " + str(e))
                 return JSONResponse(content={"error": "Internal Server Error: Unknown Error."}, status_code=500)
