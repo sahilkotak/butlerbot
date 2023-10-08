@@ -115,24 +115,7 @@ def revoke_oauth_access_token(merchant_id):
     return response
 
 
-# async def authorise_client(authorization: str = Query(default=None)):
-#     scope = os.environ.get("SCOPE", "ITEMS_READ PAYMENTS_WRITE MERCHANT_PROFILE_READ ORDERS_WRITE ORDERS_READ PAYMENTS_WRITE CUSTOMERS_WRITE CUSTOMERS_READ PAYMENTS_WRITE PAYMENTS_READ PAYMENTS_WRITE PAYMENTS_READ")
-#     redirect_uri = os.environ.get("REDIRECT_URL", "http://localhost:5173/")
-#     state = str(uuid.uuid4())
 
-#     result = client.o_auth.authorize(
-#         client_id = client_id,
-#         scope = scope,
-#         locale = "en-US",
-#         session = False,
-#         state = state,
-#         redirect_uri = redirect_uri
-#     )
-
-#     if result.is_success():
-#         logging.info(result.body)
-#     elif result.is_error():
-#         logging.info(result.errors)
 
 # @app.get("/products/")
 # async def list_catalog_items(user_id: str):
