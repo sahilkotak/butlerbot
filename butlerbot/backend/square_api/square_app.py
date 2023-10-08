@@ -1,6 +1,7 @@
 import os
 import uuid
 import logging
+import json
 from http import cookies
 from datetime import datetime, timezone
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -121,6 +122,12 @@ async def authorize_callback(query_params, cookie):
                 merchant = Merchant()
                 merchant.add_merchant(merchant_obj=merchant_obj)
                 logging.info("New merchant record added.")
+
+                merchandise_details_response = square_client.catalog.list_catalog(
+                    types = "ITEM"
+                )
+                merchandis_details = merchandise_details_response.body
+                logging.info("Merchandise: " + json.dumps(merchandis_details, indent=4))
 
                 cookie_str = 'X-ButlerBot-Active-Session-Token={0}; HttpOnly; Max-Age={1}; SameSite=Lax'.format(
                     access_token, 
