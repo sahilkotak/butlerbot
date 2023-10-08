@@ -1,5 +1,5 @@
 // import { useState } from "react";
-import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 // import Error from "./Error";
 import RegisterCookie from "./RegisterCookie";
@@ -24,17 +24,11 @@ const App = () => {
   return (
     <>
       <Router>
-        <Switch>
-          <Route path="/login">
-            <Login />
-          </Route>
-          <Route path="/setup/:cookie">
-            <RegisterCookie />
-          </Route>
-          <Route path="/" exact>
-            <Home />
-          </Route>
-        </Switch>
+        <Routes>
+          <Route path="/login" element={<Login />}></Route>
+          <Route path="/setup/:cookie" element={<RegisterCookie />}></Route>
+          <Route path="/" element={<Home />}></Route>
+        </Routes>
       </Router>
     </>
   );
