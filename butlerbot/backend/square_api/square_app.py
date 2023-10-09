@@ -1,7 +1,6 @@
 import os
 import uuid
 import logging
-import json
 from http import cookies
 from datetime import datetime, timezone
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -73,7 +72,7 @@ async def authorize_callback(query_params, cookie):
 
     # get the state that was set in the authorization url
     state = query_params.get('state')
-    client_success_url = os.environ.get("BUTLERBOT_CLIENT_URL", "http://localhost:5173/")
+    client_url = os.environ.get("BUTLERBOT_CLIENT_URL", "http://localhost:5173")
 
     # get the auth state cookie to compare with the state that is in the callback
     cookie_state = ''
@@ -121,22 +120,14 @@ async def authorize_callback(query_params, cookie):
                 }
                 merchant = Merchant()
                 merchant.add_merchant(merchant_obj=merchant_obj)
-                logging.info("Merchant record added/updated.")
-
-                merchandise_details_response = square_client.catalog.list_catalog(
-                    types = "ITEM"
-                )
-                merchandise_details = merchandise_details_response.body
-                merchandise_items = merchandise_details["objects"]
-                merchant_merchandise = merchant.add_merchandise(merchant_obj, merchandise_items)
-                #logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
+                logging.info("New merchant record added.")
 
                 cookie_str = 'X-ButlerBot-Active-Session-Token={0}; HttpOnly; Max-Age={1}; SameSite=Lax'.format(
                     access_token, 
                     time_difference_seconds(expires_at)
                 )
                 return RedirectResponse(
-                    url=client_success_url, 
+                    url='{0}/setup/{1}'.format(client_url, access_token), 
                     status_code=302,
                     headers={
                         'Content-Type': 'text/html',
