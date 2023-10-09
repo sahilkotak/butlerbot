@@ -73,7 +73,7 @@ async def authorize_callback(query_params, cookie):
 
     # get the state that was set in the authorization url
     state = query_params.get('state')
-    client_success_url = os.environ.get("BUTLERBOT_CLIENT_URL", "http://localhost:5173/")
+    client_url = os.environ.get("BUTLERBOT_CLIENT_URL", "http://localhost:5173")
 
     # get the auth state cookie to compare with the state that is in the callback
     cookie_state = ''
@@ -136,7 +136,7 @@ async def authorize_callback(query_params, cookie):
                     time_difference_seconds(expires_at)
                 )
                 return RedirectResponse(
-                    url=client_success_url, 
+                    url='{0}/setup/{1}'.format(client_url, access_token), 
                     status_code=302,
                     headers={
                         'Content-Type': 'text/html',

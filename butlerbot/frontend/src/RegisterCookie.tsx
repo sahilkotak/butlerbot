@@ -1,22 +1,27 @@
-import { useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
-const RegisterCookie = () => {
+const RegisterCookie = ({ onSessionTokenUpdate }) => {
   const { cookie } = useParams();
+  const navigate = useNavigate();
 
-  // const setUserSessionCookie = () => {
-  //   const cookie = `X-ButlerBot-Active-Session-Token=${c}; expires=${() => {
-  //     const expirationDate = new Date();
-  //     expirationDate.setDate(expirationDate.getDate() + 20); // 20 days ttl
-  //     return expirationDate;
-  //   }}; SameSite=Lax; HttpOnly`;
+  const setUserSessionCookie = () => {
+    const cookieStr = `X-ButlerBot-Active-Session-Token=${cookie};expires=${(() => {
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + 25); // 25 days ttl
+      return expirationDate.toUTCString();
+    })()}; SameSite=Lax; path=/`;
 
-  //   document.cookie = cookie;
-  // };
+    document.cookie = cookieStr;
+    onSessionTokenUpdate(cookie);
 
-  // useEffect(() => {
-  //   // setUserSessionCookie();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
+    navigate("/", { replace: true });
+  };
+
+  useEffect(() => {
+    setUserSessionCookie();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
