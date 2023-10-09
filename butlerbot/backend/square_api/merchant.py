@@ -57,11 +57,11 @@ class Merchant:
         items = []
 
         for merch_item in merchandise_items:
-            item = dict(merchant_id = merchant["id"])
-            item["item_name"] = merch_item["item_data"]["name"]
-            item["item_description"] = merch_item["item_data"]["description"]
-
             for merch_variant in merch_item["item_data"]["variations"]:
+                item = dict(merchant_id = merchant["id"])
+                item["item_name"] = merch_item["item_data"]["name"]
+                item["item_description"] = merch_item["item_data"]["description"]
+                
                 item["merchandise_id"] = merch_variant["id"]
                 item["variation_name"] = merch_variant["item_variation_data"]["name"]
 
@@ -88,6 +88,7 @@ class Merchant:
 
             with self.merchandise_table.batch_writer() as writer:
                 merch_to_add = self.__get_merchandise_items(merchant=merchant, merchandise_items=merchandise_items)
+                logging.info(merch_to_add)
 
                 for merch in merch_to_add:
                     logging.info("Merch records ids: " + merch["merchant_id"] + " | " + merch["merchandise_id"])
