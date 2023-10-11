@@ -4,7 +4,7 @@ import { Button } from "react-bootstrap";
 
 import { onSpeechStart, onSpeechEnd } from "../utils/speech-manager";
 
-const Home = () => {
+const HomePage = () => {
   const [audioReady, setAudioReady] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
 
@@ -70,4 +70,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default HomePage;
