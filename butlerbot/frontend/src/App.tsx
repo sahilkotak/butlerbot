@@ -1,8 +1,9 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import RegisterCookie from "./RegisterCookie";
+
 import Home from "./pages/Home";
 import LoginPage from "./pages/LoginPage";
 import { useState } from "react";
+import RegisterCookie from "./pages/RegisterCookie";
 
 const App = () => {
   const [sessionToken, setSessionToken] = useState(

@@ -19,7 +19,7 @@ const RegisterCookie = ({ onSessionTokenUpdate }) => {
         Please do not navigate away. Saving connection to your Square Seller
         account...
         <br />
-        Cookie: {cookie}
+        Cookie: {cookie && cookie}
       </p>
     </>
   );
