@@ -4,6 +4,7 @@ import logging
 from http import cookies
 from datetime import datetime, timezone
 from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi import HTTPException
 
 from square.client import Client
 from .oauth_client import conduct_authorize_url, exchange_oauth_tokens
@@ -30,6 +31,35 @@ def authorise():
         'Content-Type': 'text/html',
         'Set-Cookie': cookie_str
     })
+
+async def create_checkout(access_token, data: dict, location: str):
+    if access_token is None:
+        raise HTTPException(status_code=401, detail="Access token missing")
+    try:
+        client = Client(
+                    access_token=access_token.split(" ")[1],
+                    environment=environment,
+                )
+        line_items = data["data"]
+        result = client.checkout.create_payment_link(
+            body = {
+                "idempotency_key": str(uuid.uuid4()),
+                "order": {
+                "location_id": location,
+                "line_items": line_items
+                }
+            }
+            )
+
+        if result.is_success():
+            payment_link = result.body["payment_link"]["long_url"]
+            response_data = {"message": "Checkout successful!", "payment_link": payment_link}
+        elif result.is_error():
+            response_data = {"message": "Checkout successful!", "data": result.errors}
+            logging.info(result.errors)
+        return JSONResponse(content=response_data)
+    except Exception:
+        return JSONResponse(content={"error": "Unauthorised: Authorisation failed"}, status_code=400)
 
 def time_difference_seconds(timestamp_iso):
     timestamp_datetime = datetime.fromisoformat(timestamp_iso)

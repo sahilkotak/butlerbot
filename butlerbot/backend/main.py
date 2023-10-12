@@ -4,8 +4,9 @@ import base64
 import json
 import time
 import logging
+import os
 
-from fastapi import FastAPI, UploadFile, BackgroundTasks, Header
+from fastapi import FastAPI, UploadFile, BackgroundTasks, Header, HTTPException
 from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,7 +16,7 @@ from ai import get_completion
 from google_api.stt import transcribe
 from google_api.tts import to_speech
 
-from square_api.square_app import authorise, authorize_callback
+from square_api.square_app import authorise, authorize_callback, create_checkout
 
 import uvicorn
 
@@ -56,6 +57,14 @@ async def authorise_callback(
         },
         cookie=cookie
     )
+
+@app.post("/checkout")
+async def checkout(data: dict, 
+                   authorization: str = Header(None), 
+                   location: str = Header(None)):
+    
+    return await create_checkout(access_token=authorization, data=data, location=location)
+       
 
 @app.post("/inference")
 async def infer(audio: UploadFile, background_tasks: BackgroundTasks, conversation: str = Header(default=None)) -> FileResponse:
