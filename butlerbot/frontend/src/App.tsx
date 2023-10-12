@@ -30,7 +30,7 @@ const App = () => {
   const sessionTokenUpdateHandler = (cookie) => {
     const cookieStr = `X-ButlerBot-Active-Session-Token=${cookie};expires=${(() => {
       const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() + 25); // 25 days ttl
+      expirationDate.setDate(expirationDate.getDate() + 1); // 1 days ttl
       return expirationDate.toUTCString();
     })()}; SameSite=Lax; path=/`;
 
