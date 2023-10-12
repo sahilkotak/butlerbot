@@ -65,7 +65,6 @@ async def checkout(data: dict,  authorization: str = Header(None)):
         "access_token": authorization,
         "data": data,
     }
-    
     return await create_checkout(checkout_params)
        
 

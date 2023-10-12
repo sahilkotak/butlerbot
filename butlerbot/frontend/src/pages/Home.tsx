@@ -62,7 +62,6 @@ const Home = () => {
         method: "POST",
         headers: {
           Authorization: `Bearer ${sessionToken}`,
-          Location: "LHRM34RQ1R2YV",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

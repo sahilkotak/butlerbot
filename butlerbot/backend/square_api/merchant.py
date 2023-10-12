@@ -39,9 +39,7 @@ class Merchant:
                 response = self.merchant_table.scan(
                     FilterExpression=Attr("access_token").eq(access_token)
                 )
-                logging.info(response)
                 items = response.get('Items', [])
-            
                 if items:
                     item = items[0]
                     return item

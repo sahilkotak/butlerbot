@@ -32,48 +32,58 @@ def authorise():
         'Set-Cookie': cookie_str
     })
 
-# async def create_checkout(access_token, data: dict, location: str):
 async def create_checkout(checkout_params):
-    
+    """
+    Create a checkout and return the payment link.
+
+    Args:
+        checkout_params (dict): Dictionary containing 'access_token' and 'data'.
+
+    Returns:
+        JSONResponse: Response containing payment link or error message.
+    """
     access_token = checkout_params.get('access_token')
     data = checkout_params.get('data')
 
-    if access_token is None:
-        raise HTTPException(status_code=401, detail="Access token missing")
+    if access_token is None or not data:
+        raise HTTPException(status_code=400, detail="Missing Required Parameters!")
+
     try:
-        client = Client(
-                    access_token=access_token.split(" ")[1],
-                    environment=environment,
-                )
-        
         query_params = {
             "access_token": access_token.split(" ")[1],
             "merchant_id": None
         }
 
-        item = Merchant().get_merchant(query_params)
-        locationId = item.get('main_location_id')
+        merchant_item = Merchant().get_merchant(query_params)
+        location_id = merchant_item.get('main_location_id')
 
-        line_items = data["data"]
+        if not location_id:
+            raise Exception("Error: Location Id not found.")
+
+        client = Client(
+            access_token=access_token.split(" ")[1],
+            environment=environment
+        )
+
         result = client.checkout.create_payment_link(
-            body = {
+            body={
                 "idempotency_key": str(uuid.uuid4()),
                 "order": {
-                "location_id": locationId,
-                "line_items": line_items
+                    "location_id": location_id,
+                    "line_items": data["data"]
                 }
             }
-            )
+        )
 
         if result.is_success():
             payment_link = result.body["payment_link"]["long_url"]
             response_data = {"message": "Checkout successful!", "payment_link": payment_link}
+            return JSONResponse(content=response_data, status_code=200)
         elif result.is_error():
-            response_data = {"message": "Checkout successful!", "data": result.errors}
-            logging.info(result.errors)
-        return JSONResponse(content=response_data)
-    except Exception:
-        return JSONResponse(content={"error": "Unauthorised: Authorisation failed"}, status_code=400)
+            response_data = {"message": "Checkout unsuccessful!", "data": result.errors}
+            return JSONResponse(content=response_data, status_code=400)
+    except Exception as e:
+        return JSONResponse(content={"error": f"Error: {str(e)}"}, status_code=500)
 
 def time_difference_seconds(timestamp_iso):
     timestamp_datetime = datetime.fromisoformat(timestamp_iso)
