@@ -1,14 +1,32 @@
 import { useState, useRef } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "react-bootstrap";
+import axios from "axios";
 
 import { onSpeechStart, onSpeechEnd } from "../utils/speech-manager";
 
 const Home = () => {
   const [audioReady, setAudioReady] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
-  const { cookie } = useParams();
-  console.log(cookie);
+  // test checkout item
+  const testCheckoutData = [
+    {
+      catalog_object_id: "QQZ6ZOA3IUB2HFAHW7W7GVAP",
+      quantity: "1",
+    },
+    {
+      catalog_object_id: "UF4L33R6F3QDZAKWCS4E3C64",
+      quantity: "1",
+    },
+    // {
+    //   catalog_object_id: "USQKUYCDTPSIMD4MTKT7R44T",
+    //   quantity: "1",
+    // },
+    // {
+    //   catalog_object_id: "YDVHZOMBDTTFTDTOBSVDACM5",
+    //   quantity: "1",
+    // },
+  ];
 
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
@@ -56,41 +74,32 @@ const Home = () => {
       return null;
     };
 
+    // Get session token from cookie
     const sessionToken = getCookieValue("X-ButlerBot-Active-Session-Token");
+
     if (sessionToken) {
-      fetch(`${process.env.BUTLERBOT_API_ENDPOINT}/checkout`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${sessionToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          data: [
-            {
-              catalog_object_id: "QQZ6ZOA3IUB2HFAHW7W7GVAP",
-              quantity: "1",
+      try {
+        const response = await axios.post(
+          `${process.env.BUTLERBOT_API_ENDPOINT}/checkout`,
+          {
+            data: testCheckoutData,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${sessionToken}`,
+              "Content-Type": "application/json",
             },
-            {
-              catalog_object_id: "UF4L33R6F3QDZAKWCS4E3C64",
-              quantity: "1",
-            },
-            {
-              catalog_object_id: "USQKUYCDTPSIMD4MTKT7R44T",
-              quantity: "1",
-            },
-            {
-              catalog_object_id: "YDVHZOMBDTTFTDTOBSVDACM5",
-              quantity: "1",
-            },
-          ],
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
-          // window.location.href = data.payment_link;
-        })
-        .catch((error) => console.error(error));
+          }
+        );
+
+        if (response.status === 200) {
+          window.location.href = response.data.payment_link;
+        } else {
+          console.error(`Error: ${response.status} - ${response.statusText}`);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
     } else {
       console.log("Session Token not found.");
     }
