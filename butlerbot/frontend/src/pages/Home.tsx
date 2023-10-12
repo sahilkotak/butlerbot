@@ -130,9 +130,23 @@ const Home = () => {
             <audio controls src={URL.createObjectURL(audioBlob)} />
           )}
         </div>
-        <div>
-          <Button onClick={handleCheckOut}>Pay</Button>
-        </div>
+        <button
+          onClick={handleCheckOut}
+          style={{
+            background: "#000",
+            color: "#fff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            cursor: "pointer",
+            padding: "10px 40px",
+            borderRadius: "8px",
+            marginTop: "20px",
+            fontSize: "20px",
+          }}
+        >
+          Proceed to Payment
+        </button>
       </div>
     </>
   );
