@@ -1,10 +1,9 @@
 import os
 import logging
 import boto3
-import json
-import uuid
+import attr
 from botocore.exceptions import ClientError
-
+from boto3.dynamodb.conditions import Attr
 
 logging.basicConfig(level=logging.INFO)
 
@@ -24,13 +23,33 @@ class Merchant:
         self.merchant_table = ddb.Table("merchant")
         self.merchandise_table = ddb.Table("merchandise")
     
-    def get_merchant(self, merchant_id):
-        try:
-            response = self.merchant_table.get_item(Key={"id": merchant_id})
-            return response["Item"]
-        except ClientError as e:
-            logging.info("Error: " + str(e))
-            raise
+    def get_merchant(self, query_params):
+        access_token = query_params.get("access_token")
+        merchant_id = query_params.get("merchant_id")
+        
+        if merchant_id: 
+            try:
+                response = self.merchant_table.get_item(Key={"id": merchant_id})
+                return response["Item"]
+            except ClientError as e:
+                logging.info("Error: " + str(e))
+                raise
+        else: 
+            try:
+                response = self.merchant_table.scan(
+                    FilterExpression=Attr("access_token").eq(access_token)
+                )
+                logging.info(response)
+                items = response.get('Items', [])
+            
+                if items:
+                    item = items[0]
+                    return item
+                else:
+                    return None
+            except ClientError as e:
+                logging.info("Error: " + str(e))
+                raise
     
     def add_merchant(self, merchant_obj):
         try:

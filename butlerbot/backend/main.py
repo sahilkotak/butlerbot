@@ -6,8 +6,8 @@ import time
 import logging
 import os
 
-from fastapi import FastAPI, UploadFile, BackgroundTasks, Header, HTTPException
-from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
+from fastapi import FastAPI, UploadFile, BackgroundTasks, Header
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -59,11 +59,14 @@ async def authorise_callback(
     )
 
 @app.post("/checkout")
-async def checkout(data: dict, 
-                   authorization: str = Header(None), 
-                   location: str = Header(None)):
+async def checkout(data: dict,  authorization: str = Header(None)):
+                
+    checkout_params = {
+        "access_token": authorization,
+        "data": data,
+    }
     
-    return await create_checkout(access_token=authorization, data=data, location=location)
+    return await create_checkout(checkout_params)
        
 
 @app.post("/inference")

@@ -32,7 +32,12 @@ def authorise():
         'Set-Cookie': cookie_str
     })
 
-async def create_checkout(access_token, data: dict, location: str):
+# async def create_checkout(access_token, data: dict, location: str):
+async def create_checkout(checkout_params):
+    
+    access_token = checkout_params.get('access_token')
+    data = checkout_params.get('data')
+
     if access_token is None:
         raise HTTPException(status_code=401, detail="Access token missing")
     try:
@@ -40,12 +45,21 @@ async def create_checkout(access_token, data: dict, location: str):
                     access_token=access_token.split(" ")[1],
                     environment=environment,
                 )
+        
+        query_params = {
+            "access_token": access_token.split(" ")[1],
+            "merchant_id": None
+        }
+
+        item = Merchant().get_merchant(query_params)
+        locationId = item.get('main_location_id')
+
         line_items = data["data"]
         result = client.checkout.create_payment_link(
             body = {
                 "idempotency_key": str(uuid.uuid4()),
                 "order": {
-                "location_id": location,
+                "location_id": locationId,
                 "line_items": line_items
                 }
             }
