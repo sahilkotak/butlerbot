@@ -43,21 +43,25 @@ async def create_checkout(checkout_params):
         JSONResponse: Response containing payment link or error message.
     """
     access_token = checkout_params.get('access_token')
+    locationId = checkout_params.get('locationId')
     data = checkout_params.get('data')
+
+
+    
 
     if access_token is None or not data:
         raise HTTPException(status_code=400, detail="Missing Required Parameters!")
 
     try:
-        query_params = {
-            "access_token": access_token.split(" ")[1],
-            "merchant_id": None
-        }
+        # query_params = {
+        #     "access_token": access_token.split(" ")[1],
+        #     "merchant_id": None
+        # }
 
-        merchant_item = Merchant().get_merchant(query_params)
-        location_id = merchant_item.get('main_location_id')
+        # merchant_item = Merchant().get_merchant(query_params)
+        # location_id = merchant_item.get('main_location_id')
 
-        if not location_id:
+        if not locationId:
             raise Exception("Error: Location Id not found.")
 
         client = Client(
@@ -69,18 +73,38 @@ async def create_checkout(checkout_params):
             body={
                 "idempotency_key": str(uuid.uuid4()),
                 "order": {
-                    "location_id": location_id,
-                    "line_items": data["data"]
+                    "location_id": locationId,
+                    "line_items": data["checkoutData"]
                 }
             }
         )
 
-        if result.is_success():
-            payment_link = result.body["payment_link"]["long_url"]
-            response_data = {"message": "Checkout successful!", "payment_link": payment_link}
+        amount = result.body["related_resources"]["orders"][0]["total_money"]
+        if(data["source"] == "checkout"): 
+            return JSONResponse( {"message": "Checkout successful!", "payment_link": result.body["payment_link"]["url"]}, status_code=200)
+
+
+        checkout = client.terminal.create_terminal_checkout(
+            body = {
+                "idempotency_key": str(uuid.uuid4()),
+                "checkout": {
+                "amount_money": {
+                    "amount": amount["amount"],
+                    "currency": amount["currency"]
+                },
+                "device_options": {
+                    "device_id": "device:995CS397A6475287"
+                }
+                }
+            }
+        )
+        if checkout.is_success():
+            # payment_link = result.body["payment_link"]["long_url"]
+            payment_link = checkout.body
+            response_data = {"message": "Terminal checkout successful!", "payment_link": payment_link}
             return JSONResponse(content=response_data, status_code=200)
-        elif result.is_error():
-            response_data = {"message": "Checkout unsuccessful!", "data": result.errors}
+        elif checkout.is_error():
+            response_data = {"message": "Checkout unsuccessful!", "data": checkout.errors}
             return JSONResponse(content=response_data, status_code=400)
     except Exception as e:
         return JSONResponse(content={"error": f"Error: {str(e)}"}, status_code=500)
@@ -176,12 +200,14 @@ async def authorize_callback(query_params, cookie):
                 merchant.add_merchant(merchant_obj=merchant_obj)
                 logging.info("New merchant record added.")
 
-                cookie_str = 'X-ButlerBot-Active-Session-Token={0}; HttpOnly; Max-Age={1}; SameSite=Lax'.format(
-                    access_token, 
-                    time_difference_seconds(expires_at)
+                cookie_str = 'X-ButlerBot-Active-Session-Token={}; HttpOnly; Max-Age={}; SameSite=Lax; merchant_location_id={}; merchant_name={}'.format(
+                    access_token,
+                    time_difference_seconds(expires_at),
+                    merchant_location_id,
+                    merchant_name
                 )
                 return RedirectResponse(
-                    url='{0}/setup/{1}'.format(client_url, access_token), 
+                    url='{0}/setup/{1}-&-{2}-&-{3}'.format(client_url, access_token, merchant_location_id, merchant_name), 
                     status_code=302,
                     headers={
                         'Content-Type': 'text/html',

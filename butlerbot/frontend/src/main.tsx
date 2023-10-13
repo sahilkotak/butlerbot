@@ -5,11 +5,9 @@ import "./index.css";
 import App from "./App.tsx";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <ChakraProvider
-      toastOptions={{ defaultOptions: { position: "top-right" } }}
-    >
-      <App />
-    </ChakraProvider>
-  </React.StrictMode>
+  // <React.StrictMode>
+  <ChakraProvider toastOptions={{ defaultOptions: { position: "top-right" } }}>
+    <App />
+  </ChakraProvider>
+  // </React.StrictMode>
 );

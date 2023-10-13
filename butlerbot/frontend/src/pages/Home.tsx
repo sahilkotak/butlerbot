@@ -4,6 +4,7 @@ import { Button } from "react-bootstrap";
 import axios from "axios";
 
 import { onSpeechStart, onSpeechEnd } from "../utils/speech-manager";
+import Test from "./Test";
 
 const Home = () => {
   const [audioReady, setAudioReady] = useState(false);
@@ -76,24 +77,33 @@ const Home = () => {
 
     // Get session token from cookie
     const sessionToken = getCookieValue("X-ButlerBot-Active-Session-Token");
+    const locationId = getCookieValue("merchant_location_id");
+    const source = "terminal";
 
-    if (sessionToken) {
+    if (sessionToken && locationId) {
       try {
         const response = await axios.post(
           `${process.env.BUTLERBOT_API_ENDPOINT}/checkout`,
           {
-            data: testCheckoutData,
+            source: source,
+            checkoutData: testCheckoutData,
           },
           {
             headers: {
               Authorization: `Bearer ${sessionToken}`,
+              locationId: locationId,
               "Content-Type": "application/json",
             },
           }
         );
 
         if (response.status === 200) {
-          window.location.href = response.data.payment_link;
+          if (source === "checkout") {
+            window.location.href = response.data.payment_link;
+          } else {
+            alert(response.data.message);
+            console.log(response.data.message);
+          }
         } else {
           console.error(`Error: ${response.status} - ${response.statusText}`);
         }
@@ -117,6 +127,9 @@ const Home = () => {
           width: "100vw",
         }}
       >
+        <div>
+          <Test />
+        </div>
         <div>
           <Link to="/login">Login</Link>
           <Link to="/setup/AADK124243432">Setup Cookie</Link>

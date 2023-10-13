@@ -59,10 +59,11 @@ async def authorise_callback(
     )
 
 @app.post("/checkout")
-async def checkout(data: dict,  authorization: str = Header(None)):
-                
+async def checkout( data: dict, authorization: str = Header(None), locationId: str = Header(None)):
+    
     checkout_params = {
         "access_token": authorization,
+        "locationId": locationId,
         "data": data,
     }
     return await create_checkout(checkout_params)

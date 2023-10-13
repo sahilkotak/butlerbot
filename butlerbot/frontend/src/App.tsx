@@ -26,16 +26,22 @@ const App = () => {
     })()
   );
 
+  function setCookie(name, value, days) {
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + days); // Set expiration date in days
+    const expires = `expires=${expirationDate.toUTCString()}`;
+    const cookieString = `${name}=${value}; ${expires}; SameSite=Lax; path=/`;
+    document.cookie = cookieString;
+  }
+
   // handlers
   const sessionTokenUpdateHandler = (cookie) => {
-    const cookieStr = `X-ButlerBot-Active-Session-Token=${cookie};expires=${(() => {
-      const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() + 1); // 1 days ttl
-      return expirationDate.toUTCString();
-    })()}; SameSite=Lax; path=/`;
+    const [accessToken, locationId, merchantName] = cookie.split("-&-");
+    setCookie("X-ButlerBot-Active-Session-Token", accessToken, 1);
+    setCookie("merchant_location_id", locationId, 1);
+    setCookie("merchant_name", merchantName, 1);
 
-    document.cookie = cookieStr;
-    setSessionToken(cookie);
+    setSessionToken(accessToken);
   };
 
   return (
