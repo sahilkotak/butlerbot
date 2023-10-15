@@ -1,3 +1,5 @@
+import { utils } from "@ricky0123/vad-react";
+
 let source: AudioBufferSourceNode;
 let sourceIsStarted = false;
 const conversationThusFar = [];
@@ -9,27 +11,33 @@ export const onSpeechStart = () => {
 
 export const onSpeechEnd = async (audio) => {
   console.log("speech ended");
-  await processAudio(audio);
+  try {
+    await processAudio(audio);
+  } catch (e) {
+    console.log("error encountered: ", e.message);
+  }
 };
 
+export const onSpeechMisfire = () => {
+  console.log("speech misfired");
+};
+
+// helpers
 const stopSourceIfNeeded = () => {
   if (source && sourceIsStarted) {
     source.stop(0);
     sourceIsStarted = false;
   }
 };
-
 const processAudio = async (audio) => {
   const blob = createAudioBlob(audio);
   await validate(blob);
   sendData(blob);
 };
-
 const createAudioBlob = (audio) => {
-  const wavBuffer = audio;
+  const wavBuffer = utils.encodeWAV(audio);
   return new Blob([wavBuffer], { type: "audio/wav" });
 };
-
 const sendData = (blob) => {
   console.log("sending data");
   fetch("inference", {
@@ -43,13 +51,11 @@ const sendData = (blob) => {
     .then(handleSuccess)
     .catch(handleError);
 };
-
 function base64Encode(str: string) {
   const encoder = new TextEncoder();
   const data = encoder.encode(str);
   return window.btoa(String.fromCharCode(...new Uint8Array(data)));
 }
-
 function base64Decode(base64: string) {
   const binaryStr = window.atob(base64);
   const bytes = new Uint8Array(
@@ -57,28 +63,25 @@ function base64Decode(base64: string) {
   );
   return new TextDecoder().decode(bytes);
 }
-
 const handleResponse = async (res) => {
+  console.log("response handling");
   if (!res.ok) {
     return res.text().then((error) => {
       throw new Error(error);
     });
   }
 
-  const newMessages = JSON.parse(base64Decode(res.headers.get("text")));
-  conversationThusFar.push(...newMessages);
-  const blob = await res.blob();
-  handleSuccess(blob);
-  return blob;
+  const newMessage = JSON.parse(base64Decode(res.headers.get("text")));
+  conversationThusFar.push(...newMessage);
+  return res.blob();
 };
-
 const createBody = (data) => {
   const formData = new FormData();
   formData.append("audio", data, "audio.wav");
   return formData;
 };
-
-export const handleSuccess = async (blob: Blob) => {
+const handleSuccess = async (blob) => {
+  console.log("success response handling");
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
   stopSourceIfNeeded();
@@ -88,14 +91,10 @@ export const handleSuccess = async (blob: Blob) => {
   source.connect(audioContext.destination);
   source.start(0);
   sourceIsStarted = true;
-
-  return blob; // Return the blob for App.tsx to use
 };
-
 const handleError = (error) => {
-  console.log(`error encountered: ${error.message}`);
+  console.log(`error response handling: ${error.message}`);
 };
-
 const validate = async (data) => {
   const decodedData = await new AudioContext().decodeAudioData(
     await data.arrayBuffer()

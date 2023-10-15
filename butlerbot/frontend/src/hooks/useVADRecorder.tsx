@@ -1,7 +1,11 @@
 // Voice activity detector
 import { useMicVAD } from "@ricky0123/vad-react";
 
-import { onSpeechEnd, onSpeechStart } from "../utils/SpeechManager";
+import {
+  onSpeechEnd,
+  onSpeechStart,
+  onSpeechMisfire,
+} from "../utils/SpeechManager";
 
 export const useVADRecorder = () => {
   const micVADInstance = useMicVAD({
@@ -12,10 +16,7 @@ export const useVADRecorder = () => {
     onSpeechStart,
     onSpeechEnd,
     minSpeechFrames: 4,
-    onVADMisfire: () => {
-      // if speech start was detected but onSpeechEnd will not be run because the audio segment is smaller than minSpeechFrames
-      console.log("speech misfired...");
-    },
+    onVADMisfire: onSpeechMisfire,
   });
 
   return micVADInstance;
