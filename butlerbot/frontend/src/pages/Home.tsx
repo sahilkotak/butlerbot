@@ -366,6 +366,7 @@ const ChatContainer = styled.div`
   padding: 2rem;
   border: 1px solid #ccc;
   background-color: #f9f9f9;
+  max-height: 80vh;
   box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.1);
 `;
 
