@@ -73,7 +73,7 @@ async def authorize_callback(query_params, cookie):
 
     # get the state that was set in the authorization url
     state = query_params.get('state')
-    client_url = os.environ.get("BUTLERBOT_CLIENT_URL", "http://localhost:5173")
+    client_url = os.environ.get("BUTLERBOT_CLIENT_URL", "/index.html")
 
     # get the auth state cookie to compare with the state that is in the callback
     cookie_state = ''
@@ -131,12 +131,13 @@ async def authorize_callback(query_params, cookie):
                 merchant_merchandise = merchant.add_merchandise(merchant_obj, merchandise_items)
                 #logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
 
-                cookie_str = 'X-ButlerBot-Active-Session-Token={0}; HttpOnly; Max-Age={1}; SameSite=Lax'.format(
-                    access_token, 
+                cookie_str = 'X-ButlerBot-Active-Session-Token={0}; X-ButlerBot-Active-Name={1}; Max-Age={2}; Path=/'.format(
+                    access_token,
+                    merchant_name,
                     time_difference_seconds(expires_at)
                 )
                 return RedirectResponse(
-                    url='{0}/setup/{1}'.format(client_url, access_token), 
+                    url=client_url,
                     status_code=302,
                     headers={
                         'Content-Type': 'text/html',

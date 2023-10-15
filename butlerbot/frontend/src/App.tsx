@@ -1,5 +1,4 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import RegisterCookie from "./RegisterCookie";
 import { HomePage, LoginPage } from "./pages";
 import { useCookie } from "./hooks";
 
@@ -20,10 +19,10 @@ const App = () => {
               )
             }
           />
-          <Route
+          {/* <Route
             path="/setup/:cookie"
-            element={<RegisterCookie onSessionTokenUpdate={setCookie} />}
-          />
+            element={<SetupPage onSessionTokenUpdate={setCookie} />}
+          /> */}
         </Routes>
       </Router>
     </>

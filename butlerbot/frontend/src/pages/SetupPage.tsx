@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-const RegisterCookie = ({ onSessionTokenUpdate }) => {
+const SetupPage = ({ onSessionTokenUpdate }) => {
   const { cookie } = useParams();
   const navigate = useNavigate();
 
@@ -9,7 +9,7 @@ const RegisterCookie = ({ onSessionTokenUpdate }) => {
     onSessionTokenUpdate(cookie);
 
     // redirect to home page
-    navigate("/", { replace: true });
+    navigate("/index.html", { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -25,4 +25,4 @@ const RegisterCookie = ({ onSessionTokenUpdate }) => {
   );
 };
 
-export default RegisterCookie;
+export default SetupPage;
