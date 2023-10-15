@@ -1,5 +1,4 @@
 // Voice activity detector
-import { useEffect, useRef } from "react";
 import { useMicVAD } from "@ricky0123/vad-react";
 
 // class SpeechManager {
@@ -8,7 +7,7 @@ import { useMicVAD } from "@ricky0123/vad-react";
 //   constructor(private sourceIsStarted = false) {}
 // }
 
-export const useVADRecorder = (onVADLoaded) => {
+export const useVADRecorder = () => {
   const micVADInstance = useMicVAD({
     startOnLoad: true, // VAD start listening to mic input when it finishes loading
     preSpeechPadFrames: 5,
@@ -18,7 +17,7 @@ export const useVADRecorder = (onVADLoaded) => {
       console.log("speech started...");
     },
     onSpeechEnd: (audio) => {
-      console.log("speech stoped...", audio);
+      console.log("speech stopped...", audio);
     },
     minSpeechFrames: 4,
     onVADMisfire: () => {
@@ -26,17 +25,6 @@ export const useVADRecorder = (onVADLoaded) => {
       console.log("speech misfired...");
     },
   });
-
-  const loading = useRef(micVADInstance.loading);
-  console.log("vad initial loaded (useVADRecorder.loading)", loading.current);
-
-  useEffect(() => {
-    if (loading.current !== micVADInstance.loading) {
-      onVADLoaded(micVADInstance.loading);
-      loading.current = micVADInstance.loading;
-      console.log("vad loaded (useVADRecorder.loading)", loading.current);
-    }
-  }, [micVADInstance.loading, onVADLoaded]);
 
   return micVADInstance;
 };

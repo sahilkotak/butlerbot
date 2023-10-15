@@ -11,7 +11,7 @@ const App = () => {
       <Router>
         <Routes>
           <Route
-            path="/"
+            path="/index.html"
             element={
               cookie ? (
                 <HomePage />

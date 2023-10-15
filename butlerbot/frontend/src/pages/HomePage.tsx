@@ -1,14 +1,10 @@
-import { useState } from "react";
 import { Center, Highlight, Stack, Text } from "@chakra-ui/react";
 
 import { useVADRecorder } from "../hooks";
 import { RecorderError } from "../components/";
 
 const HomePage = () => {
-  const [isRecorderLoaded, setRecorderLoaded] = useState(false);
-  const vad = useVADRecorder(setRecorderLoaded);
-
-  console.log("recorder loaded (isRecorderLoaded): ", isRecorderLoaded);
+  const vad = useVADRecorder();
 
   if (vad.loading) {
     return (
