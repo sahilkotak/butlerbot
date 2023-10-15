@@ -5,7 +5,7 @@ import {
   AlertDescription,
 } from "@chakra-ui/react";
 
-const RecorderError = () => {
+const RecorderError = ({ message }) => {
   return (
     <Alert
       status="error"
@@ -20,9 +20,7 @@ const RecorderError = () => {
       <AlertTitle mt={4} mb={1} fontSize="lg">
         Error
       </AlertTitle>
-      <AlertDescription maxWidth="sm">
-        Device unsupported or permission issue.
-      </AlertDescription>
+      <AlertDescription maxWidth="sm">{message}</AlertDescription>
     </Alert>
   );
 };
