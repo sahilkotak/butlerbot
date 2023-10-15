@@ -11,14 +11,18 @@ from fetch_items import fetch_items
 
 AI_COMPLETION_MODEL = os.getenv("AI_COMPLETION_MODEL", "gpt-3.5-turbo-0613")
 LANGUAGE = os.getenv("LANGUAGE", "en")
-INITIAL_PROMPT = f"You are ButlerBot - a helpful drive through assistant with a voice interface. Greet, take orders, confirm with price, share promotions, ask for additions, inform wait time, and guide to next window. Keep your responses very succinct and limited to a single sentence since the user is interacting with you through a voice interface. Available Menu Items: {fetch_items()}"
+INITIAL_PROMPT = f"You are ButlerBot - a helpful drive through assistant with a voice interface. Greet, take orders, confirm with price, share promotions, ask for additions, inform wait time, and guide to next window. Keep your responses very succinct and limited to a single sentence since the user is interacting with you through a voice interface. Available Menu Items: {fetch_items()}. Only mention item_description if the user asks for it. Don't allow orders for anything that is not in the menu."
 
-def add_to_cart(item_name: str, price: float) -> Dict:
-    print(f"add_to_cart function was called with item_name: {item_name} and price: {price}")
+machine_instructions = {}
+
+def add_to_cart(item_name: str, price: float, quantity: int) -> Dict:
+    print(f"add_to_cart function was called with item_name: {item_name}, price: {price} and quantity: {quantity}")
+    machine_instructions.update({"action": "add_to_cart", "item_name": item_name, "price": price, "quantity": quantity})
     return {"message": "Added to cart succesfully!"}
 
 def checkout() -> Dict:
     print("checkout function was called")
+    machine_instructions.update({"action": "checkout"})
     return {"message": "Checkout initiated"}
 
 async def get_completion(user_prompt, conversation_thus_far):
@@ -40,7 +44,7 @@ async def get_completion(user_prompt, conversation_thus_far):
     functions = [
         {
             "name": "fetch_items",
-            "description": "Fetch the items from DynamoDB",
+            "description": "Fetch menu items from the menu card.",
             "parameters": {"type": "object", "properties": {}},
         },
         {
@@ -51,8 +55,10 @@ async def get_completion(user_prompt, conversation_thus_far):
                 "properties": {
                     "item_name": {"type": "string"},
                     "price": {"type": "number"},
+                    "quantity": {"type": "number"},
+
                 },
-                "required": ["item_name", "price"],
+                "required": ["item_name", "price", "quantity"],
             },
         },
         {
@@ -103,8 +109,9 @@ async def get_completion(user_prompt, conversation_thus_far):
     completion = res['choices'][0]['message']['content']
     logging.info('%s %s %s', AI_COMPLETION_MODEL, "response:", completion)
 
-    return completion
+    return completion, machine_instructions
 
 
 def _is_empty(user_prompt: str):
     return not user_prompt or user_prompt.isspace()
+

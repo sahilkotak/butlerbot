@@ -4,8 +4,8 @@ import json
 from decimal import Decimal
 
 def fetch_items():
-    AWS_ACCESS_KEY_ID="key"
-    AWS_SECRET_ACCESS_KEY="key"
+    AWS_ACCESS_KEY_ID="key" #refactor this
+    AWS_SECRET_ACCESS_KEY="key" #refactor this
     dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-2', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
     table = dynamodb.Table('merchandise')
 
@@ -32,6 +32,6 @@ def fetch_items():
 
     # Format the items and currency code into a json
     # The json will be in the format: {"items": [{"item_description": "", "item_name": "", "price": "", "variation_name": ""}, ...], "currency": ""}
-    items_json = json.dumps({"items": items_details, "currency": currency_code})
+    items_json = json.dumps({"items": items_details, "currency": currency_code, "message": "This our menu, only allow users to order what's available here."})
 
     return items_json
