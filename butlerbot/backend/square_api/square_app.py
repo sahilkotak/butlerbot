@@ -43,13 +43,13 @@ async def create_checkout(checkout_params):
         JSONResponse: Response containing payment link or error message.
     """
     access_token = checkout_params.get('access_token')
-    locationId = checkout_params.get('locationId')
+    location_id = checkout_params.get('locationId')
     data = checkout_params.get('data')
 
 
     
 
-    if access_token is None or not data:
+    if None in [access_token, location_id, data]:
         raise HTTPException(status_code=400, detail="Missing Required Parameters!")
 
     try:
@@ -61,29 +61,26 @@ async def create_checkout(checkout_params):
         # merchant_item = Merchant().get_merchant(query_params)
         # location_id = merchant_item.get('main_location_id')
 
-        if not locationId:
-            raise Exception("Error: Location Id not found.")
-
         client = Client(
             access_token=access_token.split(" ")[1],
             environment=environment
         )
+        idempotency_key = str(uuid.uuid4())
 
         result = client.checkout.create_payment_link(
             body={
-                "idempotency_key": str(uuid.uuid4()),
+                "idempotency_key": idempotency_key,
                 "order": {
-                    "location_id": locationId,
+                    "location_id": location_id,
                     "line_items": data["checkoutData"]
                 }
             }
         )
 
-        amount = result.body["related_resources"]["orders"][0]["total_money"]
         if(data["source"] == "checkout"): 
             return JSONResponse( {"message": "Checkout successful!", "payment_link": result.body["payment_link"]["url"]}, status_code=200)
 
-
+        amount = result.body["related_resources"]["orders"][0]["total_money"]
         checkout = client.terminal.create_terminal_checkout(
             body = {
                 "idempotency_key": str(uuid.uuid4()),
@@ -93,15 +90,15 @@ async def create_checkout(checkout_params):
                     "currency": amount["currency"]
                 },
                 "device_options": {
-                    "device_id": "device:995CS397A6475287"
+                    # "device_id": "device:995CS397A6475287"
+                    "device_id": "841100b9-ee60-4537-9bcf-e30b2ba5e215"
                 }
                 }
             }
         )
         if checkout.is_success():
-            # payment_link = result.body["payment_link"]["long_url"]
             payment_link = checkout.body
-            response_data = {"message": "Terminal checkout successful!", "payment_link": payment_link}
+            response_data = {"message": "Terminal checkout successful!", "response": payment_link}
             return JSONResponse(content=response_data, status_code=200)
         elif checkout.is_error():
             response_data = {"message": "Checkout unsuccessful!", "data": checkout.errors}
