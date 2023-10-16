@@ -1,6 +1,7 @@
 import os
 import uuid
 import logging
+import json
 from http import cookies
 from datetime import datetime, timezone
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -53,13 +54,7 @@ async def create_checkout(checkout_params):
         raise HTTPException(status_code=400, detail="Missing Required Parameters!")
 
     try:
-        # query_params = {
-        #     "access_token": access_token.split(" ")[1],
-        #     "merchant_id": None
-        # }
-
-        # merchant_item = Merchant().get_merchant(query_params)
-        # location_id = merchant_item.get('main_location_id')
+       
 
         client = Client(
             access_token=access_token.split(" ")[1],
@@ -77,8 +72,8 @@ async def create_checkout(checkout_params):
             }
         )
 
-        if(data["source"] == "checkout"): 
-            return JSONResponse( {"message": "Checkout successful!", "payment_link": result.body["payment_link"]["url"]}, status_code=200)
+        # if(data["source"] == "checkout"): 
+        #     return JSONResponse( {"message": "Checkout successful!", "payment_link": result.body["payment_link"]["url"]}, status_code=200)
 
         amount = result.body["related_resources"]["orders"][0]["total_money"]
         checkout = client.terminal.create_terminal_checkout(
@@ -147,7 +142,7 @@ async def authorize_callback(query_params, cookie):
 
     # get the state that was set in the authorization url
     state = query_params.get('state')
-    client_url = os.environ.get("BUTLERBOT_CLIENT_URL", "http://localhost:5173")
+    client_url = os.environ.get("BUTLERBOT_CLIENT_URL", "/index.html")
 
     # get the auth state cookie to compare with the state that is in the callback
     cookie_state = ''
@@ -195,16 +190,22 @@ async def authorize_callback(query_params, cookie):
                 }
                 merchant = Merchant()
                 merchant.add_merchant(merchant_obj=merchant_obj)
-                logging.info("New merchant record added.")
+                logging.info("Merchant record added/updated.")
 
-                cookie_str = 'X-ButlerBot-Active-Session-Token={}; HttpOnly; Max-Age={}; SameSite=Lax; merchant_location_id={}; merchant_name={}'.format(
+                merchandise_details_response = square_client.catalog.list_catalog(
+                    types = "ITEM"
+                )
+                merchandise_details = merchandise_details_response.body
+                merchandise_items = merchandise_details["objects"]
+                merchant_merchandise = merchant.add_merchandise(merchant_obj, merchandise_items)
+                #logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
+
+                cookie_str = 'X-ButlerBot-Active-Session-Token={}; Max-Age={};'.format(
                     access_token,
                     time_difference_seconds(expires_at),
-                    merchant_location_id,
-                    merchant_name
                 )
                 return RedirectResponse(
-                    url='{0}/setup/{1}-&-{2}-&-{3}'.format(client_url, access_token, merchant_location_id, merchant_name), 
+                    url=client_url,
                     status_code=302,
                     headers={
                         'Content-Type': 'text/html',
