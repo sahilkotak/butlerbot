@@ -4,7 +4,6 @@ import { useCookie } from "./hooks";
 
 const App = () => {
   const [cookie, setCookie] = useCookie();
-  console.log(cookie, "session toekne");
   return (
     <Router>
       <Routes>
@@ -18,10 +17,6 @@ const App = () => {
             )
           }
         />
-        {/* <Route
-            path="/setup/:cookie"
-            element={<SetupPage onSessionTokenUpdate={setCookie} />}
-          /> */}
       </Routes>
     </Router>
   );

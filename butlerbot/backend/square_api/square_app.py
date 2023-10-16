@@ -185,7 +185,6 @@ async def authorize_callback(query_params, cookie):
                 merchandise_details_response = square_client.catalog.list_catalog(
                     types = "ITEM"
                 )
-                # logging.info("merchandise_details_response: " + json.dumps(merchandise_details_response.body))
                 
                 merchandise_details = merchandise_details_response.body
                 if merchandise_details and merchandise_details["objects"]:
@@ -195,26 +194,25 @@ async def authorize_callback(query_params, cookie):
 
                     device_details_response = square_client.devices.list_device_codes(location_id=merchant_location_id)
                     device_details = device_details_response.body
-                    # logging.info("device details: " + json.dumps(device_details))
-                    if device_details and device_details["device_codes"]:
-                        device_detail = device_details["device_codes"][0]
-                        device_id = device_detail["id"]
+                    # if device_details and device_details["device_codes"]:
+                    #     device_detail = device_details["device_codes"][0]
+                    #     device_id = device_detail["id"]
 
-                        response = RedirectResponse(
-                            url=client_url,
-                            status_code=302,
-                            headers={
-                                'Content-Type': 'text/html',
-                            }
-                        )
-                        response.set_cookie(key="X-ButlerBot-Active-Session-Token", value=access_token, max_age=time_difference_seconds(expires_at))
-                        response.set_cookie(key="X-ButlerBot-Merchant-Id", value=merchant_id, max_age=time_difference_seconds(expires_at))
-                        response.set_cookie(key="X-ButlerBot-Merchant-Name", value=merchant_name, max_age=time_difference_seconds(expires_at))
-                        response.set_cookie(key="X-ButlerBot-Merchant-Loc", value=merchant_location_id, max_age=time_difference_seconds(expires_at))
-                        response.set_cookie(key="X-ButlerBot-Merchant-Device-Id", value=device_id, max_age=time_difference_seconds(expires_at))
-                        return response
-                    else:
-                        return JSONResponse(content={"message": "Unfortunately no Terminal device data was found from your Square account. Please try again a different Square account or use our demo ButlerBot Square account."}, status_code=400)
+                    response = RedirectResponse(
+                        url=client_url,
+                        status_code=302,
+                        headers={
+                            'Content-Type': 'text/html',
+                        }
+                    )
+                    response.set_cookie(key="X-ButlerBot-Active-Session-Token", value=access_token, max_age=time_difference_seconds(expires_at))
+                    response.set_cookie(key="X-ButlerBot-Merchant-Id", value=merchant_id, max_age=time_difference_seconds(expires_at))
+                    response.set_cookie(key="X-ButlerBot-Merchant-Name", value=merchant_name, max_age=time_difference_seconds(expires_at))
+                    response.set_cookie(key="X-ButlerBot-Merchant-Loc", value=merchant_location_id, max_age=time_difference_seconds(expires_at))
+                    # response.set_cookie(key="X-ButlerBot-Merchant-Device-Id", value=device_id, max_age=time_difference_seconds(expires_at))
+                    return response
+                    # else:
+                    #     return JSONResponse(content={"message": "Unfortunately no Terminal device data was found from your Square account. Please try again a different Square account or use our demo ButlerBot Square account."}, status_code=400)
                 else:
                     return JSONResponse(content={"message": "Unfortunately no merchandise data was found from your Square account. Please try again a different Square account or use our demo ButlerBot Square account."}, status_code=400)
             except Exception as e:

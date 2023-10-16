@@ -1,3 +1,4 @@
+from locale import currency
 import boto3
 from boto3.dynamodb.conditions import Key
 import json
@@ -33,6 +34,7 @@ def fetch_items():
             'item_name': item['item_name'].title(),  # Convert item name to title case
             'price': str(Decimal(item['price'])),  # Convert Decimal to string to avoid JSON serialization error
             'variation_name': item['variation_name'],
+            'currency': response['Items'][0]['currency'],
         }
         items_details.append(item_details)
 

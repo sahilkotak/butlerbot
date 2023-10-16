@@ -4,6 +4,7 @@ import base64
 import json
 import time
 import logging
+from square_api.merchant import Merchant
 from fetch_items import fetch_items
 
 
@@ -65,9 +66,13 @@ async def checkout( data: dict, authorization: str = Header(None), locationId: s
     }
     return await create_checkout(checkout_params)
 
-@app.post("/getMenu")
-async def checkout(authorization: str = Header(None)):
-    return fetch_items()
+@app.get("/get-menu")
+async def get_menu(authorization: str = Header(None)):
+    query_params = {
+        "merchant_id": authorization,
+    }
+    merchant = Merchant()
+    return merchant.get_menu(query_params)
 
 @app.post("/inference")
 async def infer(audio: UploadFile, background_tasks: BackgroundTasks, conversation: str = Header(default=None)):

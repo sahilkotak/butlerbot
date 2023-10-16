@@ -4,6 +4,7 @@ import boto3
 import attr
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Attr
+from boto3.dynamodb.conditions import Key
 
 logging.basicConfig(level=logging.INFO)
 
@@ -25,26 +26,40 @@ class Merchant:
     
     def get_menu(self, query_params):
         """
-        Retrieve merchant information based on access_token or merchant_id.
+        Retrieve merchandise information based merchant_id.
 
         Args:
-            query_params (dict): Dictionary containing 'access_token' and 'merchant_id'.
+            query_params (dict): Dictionary containing 'merchant_id'.
 
         Returns:
             dict or None: Retrieved merchant information or None if not found.
         """
-        # access_token = query_params.get("access_token")
-        access_token = "EAAAEBt07P6tvxI2FsjQJQdThewQaq9s-erZHsIsOiTpj0KUv4h7Jq1V7CawvzK8"
-        merchant_id = "MLF15C4CDSG4S"
         
         try:
             # Retrieve merchant by access_token
+            merchant_id = query_params.get('merchant_id')
+            logging.info(merchant_id)
+            logging.info("merchant_id")
             
-            response = self.merchandise_table.scan(
-                FilterExpression=Attr("merchant_id").eq(merchant_id)
+            response = self.merchandise_table.query(
+                KeyConditionExpression=Key('merchant_id').eq(merchant_id)
             )
-            return response
-           
+            items = response['Items']
+
+            # Extract the required details from each item
+            items_details = []
+            for item in items:
+                item_details = {
+                    'item_description': item['item_description'],
+                    'item_name': item['item_name'].title(),  # Convert item name to title case
+                    'price': str((item['price'])),  # Convert Decimal to string to avoid JSON serialization error
+                    'variation_name': item['variation_name'],
+                    'currency': response['Items'][0]['currency'],
+                }
+                items_details.append(item_details)
+
+            return items_details
+                
         except ClientError as e:
             logging.error("Error retrieving merchant data: " + str(e))
             raise
