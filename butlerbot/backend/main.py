@@ -8,7 +8,7 @@ from fetch_items import fetch_items
 
 
 from fastapi import FastAPI, UploadFile, BackgroundTasks, Header
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from ai import get_completion
@@ -68,9 +68,6 @@ async def checkout( data: dict, authorization: str = Header(None), locationId: s
 @app.post("/getMenu")
 async def checkout(authorization: str = Header(None)):
     return fetch_items()
-
-
-       
 
 @app.post("/inference")
 async def infer(audio: UploadFile, background_tasks: BackgroundTasks, conversation: str = Header(default=None)):

@@ -1,8 +1,7 @@
 import { Center, Text } from "@chakra-ui/react";
 
 import { useVADRecorder } from "../hooks";
-import { RecorderError } from "../components/";
-import Chat from "./Chat";
+import { RecorderError, Chat } from "../components/";
 
 const HomePage = () => {
   const vad = useVADRecorder();

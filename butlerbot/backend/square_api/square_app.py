@@ -184,24 +184,28 @@ async def authorize_callback(query_params, cookie):
                 merchandise_details_response = square_client.catalog.list_catalog(
                     types = "ITEM"
                 )
-                logging.info(merchandise_details_response)
+                # logging.info("merchandise_details_response: " + json.dumps(merchandise_details_response.body))
                 
                 merchandise_details = merchandise_details_response.body
-                merchandise_items = merchandise_details["objects"]
-                merchant_merchandise = merchant.add_merchandise(merchant_obj, merchandise_items)
-                # logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
+                if merchandise_details and merchandise_details["objects"]:
+                    merchandise_items = merchandise_details["objects"]
+                    merchant_merchandise = merchant.add_merchandise(merchant_obj, merchandise_items)
+                    # logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
 
-                response = RedirectResponse(
-                    url=client_url,
-                    status_code=302,
-                    headers={
-                        'Content-Type': 'text/html',
-                    }
-                )
-                response.set_cookie(key="X-ButlerBot-Active-Session-Token", value=access_token, max_age=time_difference_seconds(expires_at))
-                response.set_cookie(key="X-ButlerBot-Merchant-Name", value=merchant_name, max_age=time_difference_seconds(expires_at))
-                response.set_cookie(key="X-ButlerBot-Merchant-Loc", value=merchant_location_id, max_age=time_difference_seconds(expires_at))
-                return response
+                    response = RedirectResponse(
+                        url=client_url,
+                        status_code=302,
+                        headers={
+                            'Content-Type': 'text/html',
+                        }
+                    )
+                    response.set_cookie(key="X-ButlerBot-Active-Session-Token", value=access_token, max_age=time_difference_seconds(expires_at))
+                    response.set_cookie(key="X-ButlerBot-Merchant-Id", value=merchant_id, max_age=time_difference_seconds(expires_at))
+                    response.set_cookie(key="X-ButlerBot-Merchant-Name", value=merchant_name, max_age=time_difference_seconds(expires_at))
+                    response.set_cookie(key="X-ButlerBot-Merchant-Loc", value=merchant_location_id, max_age=time_difference_seconds(expires_at))
+                    return response
+                else:
+                    return JSONResponse(content={"message": "Unfortunately no merchandise data was found from your Square account. Please try again a different Square account or use our demo ButlerBot Square account."}, status_code=400)
             except Exception as e:
                 logging.info("Error: Test " + str(e))
                 return JSONResponse(content={"error": "Internal Server Error: Unknown Error."}, status_code=500)
