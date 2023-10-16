@@ -2,11 +2,20 @@ import boto3
 from boto3.dynamodb.conditions import Key
 import json
 from decimal import Decimal
+import os
+
+class Config:
+    DB_REGION_NAME = os.getenv("DB_REGION_NAME", "ap-southeast-2")
+    #DB_ACCESS_KEY_ID = os.getenv("DB_ACCESS_KEY_ID")
+    #DB_SECRET_ACCESS_KEY = os.getenv("DB_SECRET_ACCESS_KEY")
 
 def fetch_items():
-    AWS_ACCESS_KEY_ID="key" #refactor this
-    AWS_SECRET_ACCESS_KEY="key" #refactor this
-    dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-2', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+    dynamodb = boto3.resource(
+        "dynamodb",
+        #region_name=Config.DB_REGION_NAME,
+        #aws_access_key_id=Config.DB_ACCESS_KEY_ID,
+        #aws_secret_access_key=Config.DB_SECRET_ACCESS_KEY
+    )
     table = dynamodb.Table('merchandise')
 
     # Fetch items for a specific merchant
