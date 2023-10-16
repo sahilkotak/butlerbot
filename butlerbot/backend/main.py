@@ -13,7 +13,6 @@ from google_api.stt import transcribe
 from google_api.tts import to_speech
 from square_api.square_app import authorise, authorize_callback
 import uvicorn
-from typing import Tuple
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
