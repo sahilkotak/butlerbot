@@ -73,7 +73,7 @@ async def authorize_callback(query_params, cookie):
 
     # get the state that was set in the authorization url
     state = query_params.get('state')
-    client_url = os.environ.get("BUTLERBOT_CLIENT_URL", "http://localhost:5173")
+    client_url = os.environ.get("BUTLERBOT_CLIENT_URL", "/index.html")
 
     # get the auth state cookie to compare with the state that is in the callback
     cookie_state = ''
@@ -131,18 +131,17 @@ async def authorize_callback(query_params, cookie):
                 merchant_merchandise = merchant.add_merchandise(merchant_obj, merchandise_items)
                 #logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
 
-                cookie_str = 'X-ButlerBot-Active-Session-Token={0}; HttpOnly; Max-Age={1}; SameSite=Lax'.format(
-                    access_token, 
-                    time_difference_seconds(expires_at)
-                )
-                return RedirectResponse(
-                    url='{0}/setup/{1}'.format(client_url, access_token), 
+                response = RedirectResponse(
+                    url=client_url,
                     status_code=302,
                     headers={
                         'Content-Type': 'text/html',
-                        'Set-Cookie': cookie_str
                     }
                 )
+                response.set_cookie(key="X-ButlerBot-Active-Session-Token", value=access_token, max_age=time_difference_seconds(expires_at))
+                response.set_cookie(key="X-ButlerBot-Merchant-Name", value=merchant_name, max_age=time_difference_seconds(expires_at))
+                response.set_cookie(key="X-ButlerBot-Merchant-Loc", value=merchant_location_id, max_age=time_difference_seconds(expires_at))
+                return response
             except Exception as e:
                 logging.info("Error: " + str(e))
                 return JSONResponse(content={"error": "Internal Server Error: Unknown Error."}, status_code=500)
