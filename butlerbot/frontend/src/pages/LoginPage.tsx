@@ -35,21 +35,21 @@ const LoginPage = ({ onSessionTokenUpdate }) => {
 
   const handleSignInWithSquare = () => {
     // eslint-disable-next-line no-undef
-    if (!process.env.BUTLERBOT_API_ENDPOINT) {
-      toast({
-        title: "Application error.",
-        description:
-          "Application not configured properly. Missing required configurations - BUTLERBOT_API_ENDPOINT.",
-        status: "error",
-        duration: 9000,
-        isClosable: true,
-      });
+    // if (!process.env.BUTLERBOT_API_ENDPOINT) {
+    //   toast({
+    //     title: "Application error.",
+    //     description:
+    //       "Application not configured properly. Missing required configurations - BUTLERBOT_API_ENDPOINT.",
+    //     status: "error",
+    //     duration: 9000,
+    //     isClosable: true,
+    //   });
 
-      return;
-    }
+    //   return;
+    // }
 
     // eslint-disable-next-line no-undef
-    window.location.href = `${process.env.BUTLERBOT_API_ENDPOINT}/authorise`;
+    window.location.href = `/authorise`;
   };
 
   return (
