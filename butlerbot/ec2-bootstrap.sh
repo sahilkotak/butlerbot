@@ -62,7 +62,8 @@ sudo bash nodesource_setup.sh
 sudo apt install nodejs
 ### build frontend dist folder
 cd ~/butlerbot/butlerbot/frontend
-echo 'DEMO_BUTLERBOT_APP_SESSION_TOKEN = ABCDEF12345' > .env
+echo 'DEMO_BUTLERBOT_APP_SESSION_TOKEN = ABCDEF12345
+DEMO_BUTLERBOT_APP_DEVICE_ID = 22cd266c-6246-4c06-9983-67f0c26346b0' > .env
 npm i
 npm run build
 ### run backend server

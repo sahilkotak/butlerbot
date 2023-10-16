@@ -5,6 +5,7 @@ import json
 from http import cookies
 from datetime import datetime, timezone
 from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi import HTTPException
 
 from square.client import Client
 from .oauth_client import conduct_authorize_url, exchange_oauth_tokens
@@ -31,6 +32,63 @@ def authorise():
         'Content-Type': 'text/html',
         'Set-Cookie': cookie_str
     })
+
+async def getItems(checkout_params):
+    merchant = Merchant()
+    data = merchant.get_menu(query_params=checkout_params)
+
+    return JSONResponse(content=data, status_code=200)
+
+
+async def create_checkout(checkout_params):
+    """
+    Create a checkout and return the payment link.
+
+    Args:
+        checkout_params (dict): Dictionary containing 'access_token' and 'data'.
+
+    Returns:
+        JSONResponse: Response containing payment link or error message.
+    """
+    access_token = checkout_params.get('access_token')
+    location_id = checkout_params.get('locationId')
+    data = checkout_params.get('data')
+
+    if None in [access_token, location_id, data]:
+        raise HTTPException(status_code=400, detail="Missing Required Parameters!")
+
+    try:
+       
+        client = Client(
+            access_token=access_token.split(" ")[1],
+            environment=environment
+        )
+        idempotency_key = str(uuid.uuid4())
+
+        checkout = client.terminal.create_terminal_checkout(
+            body = {
+                "idempotency_key": idempotency_key,
+                "checkout": {
+                    "device_options": {
+                        "device_id": "da40d603-c2ea-4a65-8cfd-f42e36dab0c7"
+                    },
+                    "amount_money": {
+                        "amount": 20,
+                        "currency": "GBP"
+                    },
+                }
+            }
+        )
+        logging.info(checkout)
+        if checkout.is_success():
+            payment_link = checkout.body
+            response_data = {"message": "Terminal checkout successful!", "response": payment_link}
+            return JSONResponse(content=response_data, status_code=200)
+        elif checkout.is_error():
+            response_data = {"message": "Checkout unsuccessful!", "data": checkout.errors}
+            return JSONResponse(content=response_data, status_code=400)
+    except Exception as e:
+        return JSONResponse(content={"error": f"Error: {str(e)}"}, status_code=500)
 
 def time_difference_seconds(timestamp_iso):
     timestamp_datetime = datetime.fromisoformat(timestamp_iso)
@@ -123,27 +181,44 @@ async def authorize_callback(query_params, cookie):
                 merchant.add_merchant(merchant_obj=merchant_obj)
                 logging.info("Merchant record added/updated.")
 
+                logging.info("fetching merchandise items")
                 merchandise_details_response = square_client.catalog.list_catalog(
                     types = "ITEM"
                 )
+                # logging.info("merchandise_details_response: " + json.dumps(merchandise_details_response.body))
+                
                 merchandise_details = merchandise_details_response.body
-                merchandise_items = merchandise_details["objects"]
-                merchant_merchandise = merchant.add_merchandise(merchant_obj, merchandise_items)
-                #logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
+                if merchandise_details and merchandise_details["objects"]:
+                    merchandise_items = merchandise_details["objects"]
+                    merchant_merchandise = merchant.add_merchandise(merchant_obj, merchandise_items)
+                    # logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
 
-                response = RedirectResponse(
-                    url=client_url,
-                    status_code=302,
-                    headers={
-                        'Content-Type': 'text/html',
-                    }
-                )
-                response.set_cookie(key="X-ButlerBot-Active-Session-Token", value=access_token, max_age=time_difference_seconds(expires_at))
-                response.set_cookie(key="X-ButlerBot-Merchant-Name", value=merchant_name, max_age=time_difference_seconds(expires_at))
-                response.set_cookie(key="X-ButlerBot-Merchant-Loc", value=merchant_location_id, max_age=time_difference_seconds(expires_at))
-                return response
+                    device_details_response = square_client.devices.list_device_codes(location_id=merchant_location_id)
+                    device_details = device_details_response.body
+                    # logging.info("device details: " + json.dumps(device_details))
+                    if device_details and device_details["device_codes"]:
+                        device_detail = device_details["device_codes"][0]
+                        device_id = device_detail["id"]
+
+                        response = RedirectResponse(
+                            url=client_url,
+                            status_code=302,
+                            headers={
+                                'Content-Type': 'text/html',
+                            }
+                        )
+                        response.set_cookie(key="X-ButlerBot-Active-Session-Token", value=access_token, max_age=time_difference_seconds(expires_at))
+                        response.set_cookie(key="X-ButlerBot-Merchant-Id", value=merchant_id, max_age=time_difference_seconds(expires_at))
+                        response.set_cookie(key="X-ButlerBot-Merchant-Name", value=merchant_name, max_age=time_difference_seconds(expires_at))
+                        response.set_cookie(key="X-ButlerBot-Merchant-Loc", value=merchant_location_id, max_age=time_difference_seconds(expires_at))
+                        response.set_cookie(key="X-ButlerBot-Merchant-Device-Id", value=device_id, max_age=time_difference_seconds(expires_at))
+                        return response
+                    else:
+                        return JSONResponse(content={"message": "Unfortunately no Terminal device data was found from your Square account. Please try again a different Square account or use our demo ButlerBot Square account."}, status_code=400)
+                else:
+                    return JSONResponse(content={"message": "Unfortunately no merchandise data was found from your Square account. Please try again a different Square account or use our demo ButlerBot Square account."}, status_code=400)
             except Exception as e:
-                logging.info("Error: " + str(e))
+                logging.info("Error: Test " + str(e))
                 return JSONResponse(content={"error": "Internal Server Error: Unknown Error."}, status_code=500)
 
         elif response.is_error():
