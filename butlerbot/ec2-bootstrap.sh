@@ -9,7 +9,7 @@ gh auth login --with-token < git-credentials.txt
 gh repo clone sahilkotak/butlerbot
 git checkout development
 # Username: PatelKeviin
-### install ffmpeg dependencyno
+### install ffmpeg dependency
 sudo apt install ffmpeg -y
 ### install python3.11
 sudo apt install wget build-essential libncursesw5-dev libssl-dev \
@@ -18,11 +18,10 @@ sudo add-apt-repository ppa:deadsnakes/ppa -y
 sudo apt install python3.11
 curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11 
 ### spin up local server
-cd butlerbot/butlerbot/backend
 curl -sSL https://install.python-poetry.org | python3.11 -
-nano ~/.bashrc
-# export PATH="/home/ubuntu/.local/bin:$PATH"
-source ~/.bashrc
+nano ~/.bash_profile
+# export PATH=$PATH:/home/ubuntu/.local/bin
+source ~/.bash_profile
 poetry install
 pip3.11 install fastapi
 pip3.11 install uvicorn
@@ -56,16 +55,55 @@ nano ~/butlerbotai-credentials.json
 nano ~/.bash_profile
 # export GOOGLE_APPLICATION_CREDENTIALS=~/butlerbotai-credentials.json
 # export OPENAI_API_KEY=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
-# export PATH=$PATH:/home/ubuntu/.local/bin
 source ~/.bash_profile
+### install node v16
+curl -sL https://deb.nodesource.com/setup_16.x -o nodesource_setup.sh
+sudo bash nodesource_setup.sh
+sudo apt install nodejs
 ### build frontend dist folder
-sudo apt install nodejs -y
-sudo apt install npm -y
-
 cd ~/butlerbot/butlerbot/frontend
-echo 'BUTLERBOT_API_ENDPOINT = /
-DEMO_BUTLERBOT_APP_SESSION_TOKEN = ABCDEF12345' > .env
+echo 'DEMO_BUTLERBOT_APP_SESSION_TOKEN = ABCDEF12345' > .env
+npm i
+npm run build
 ### run backend server
 cd ~/butlerbot/butlerbot/backend
 python3.11 -m uvicorn main:app
+### configure ssl endpoint
+sudo apt-get install openssl
+cd /etc/nginx
+sudo mkdir ssl
+sudo openssl req -batch -x509 -nodes -days 365 \
+-newkey rsa:2048 \
+-keyout /etc/nginx/ssl/server.key \
+-out /etc/nginx/ssl/server.crt
+cd /etc/nginx/sites-enabled/
+sudo nano butlerbot_site
+# server {
+#     listen 80;
+#     listen 443 ssl;
+#     ssl on;
+#     ssl_certificate /etc/nginx/ssl/server.crt;
+#     ssl_certificate_key /etc/nginx/ssl/server.key;
+#     server_name 54.82.249.3;
+#     location / {
+#         proxy_pass http://127.0.0.1:8000;
+#     }
+# }
+sudo service nginx restart
 # configure service autostart
+cd /etc/systemd/system
+sudo nano butlerbot.service
+# [Unit]
+# Description=ButlerBot App
+
+# [Service]
+# User=ubuntu
+# WorkingDirectory=/home/ubuntu/butlerbot/butlerbot/backend
+# ExecStart=python3.11 -m uvicorn main:app
+# Restart=always
+
+# [Install]
+# WantedBy=multi-user.target
+sudo systemctl daemon-reload
+sudo systemctl start butlerbot.service
+sudo systemctl enable butlerbot.service
