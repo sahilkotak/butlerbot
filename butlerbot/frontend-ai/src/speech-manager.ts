@@ -75,8 +75,27 @@ const handleResponse = async (res) => {
 
     const newMessages = JSON.parse(base64Decode(res.headers.get("text")));
     conversationThusFar.push(...newMessages);
-    return res.blob();
+    const jsonResponse = await res.json();
+    console.log(jsonResponse);
+
+    // Convert base64 audio data to blob
+    const audioData = jsonResponse.audio_data;
+    const audioBlob = await base64ToBlob(audioData, 'audio/wav');
+
+    // Log the rest of the JSON response
+    console.log(`Created On: ${jsonResponse.createdOn}`);
+    console.log(`User Prompt: ${jsonResponse.user_prompt}`);
+    console.log(`AI Response: ${jsonResponse.ai_response}`);
+    console.log(`Instructions: `, jsonResponse.instructions);
+
+    return audioBlob;
 };
+
+async function base64ToBlob(base64: string, type: string) {
+    const response = await fetch(`data:${type};base64,${base64}`);
+    const blob = await response.blob();
+    return blob;
+}
 
 const createBody = (data) => {
     const formData = new FormData();
@@ -111,3 +130,4 @@ const validate = async (data) => {
 
     if (duration < minDuration) throw new Error(`Duration is ${duration}s, which is less than minimum of ${minDuration}s`);
 };
+
