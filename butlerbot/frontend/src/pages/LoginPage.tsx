@@ -17,11 +17,24 @@ const LoginPage = ({ onSessionTokenUpdate }) => {
   const handleSignInWithDemoAccount = () => {
     // eslint-disable-next-line no-undef
     const demoAccountToken = process.env.DEMO_BUTLERBOT_APP_SESSION_TOKEN;
+    const demoAccountDeviceId = process.env.DEMO_BUTLERBOT_APP_DEVICE_ID;
     if (!demoAccountToken) {
       toast({
         title: "Application error.",
         description:
           "Application not configured properly. Missing required configurations - DEMO_BUTLERBOT_APP_SESSION_TOKEN.",
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
+
+      return;
+    }
+    if (!demoAccountDeviceId) {
+      toast({
+        title: "Application error.",
+        description:
+          "Application not configured properly. Missing required configurations - DEMO_BUTLERBOT_APP_DEVICE_ID.",
         status: "error",
         duration: 9000,
         isClosable: true,
