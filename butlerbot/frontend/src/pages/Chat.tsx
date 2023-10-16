@@ -72,15 +72,14 @@ function Chat(): JSX.Element {
 
     // Get session token from cookie
     const sessionToken = getCookieValue("X-ButlerBot-Active-Session-Token");
-    const locationId = getCookieValue("merchant_location_id");
-    const source = "terminal";
+    const locationId = getCookieValue("X-ButlerBot-Merchant-Loc");
+    console.log(sessionToken, locationId);
 
     if (sessionToken && locationId) {
       try {
         const response = await axios.post(
           `${process.env.BUTLERBOT_API_ENDPOINT}/checkout`,
           {
-            source: source,
             checkoutData: testCheckoutData,
           },
           {
