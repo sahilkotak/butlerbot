@@ -200,16 +200,18 @@ async def authorize_callback(query_params, cookie):
                 merchant_merchandise = merchant.add_merchandise(merchant_obj, merchandise_items)
                 #logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
 
-                cookie_str = 'X-ButlerBot-Active-Session-Token={}; Max-Age={};'.format(
+                cookie_str = 'X-ButlerBot-Active-Session-Token={}; Max-Age={}'.format(
                     access_token,
-                    time_difference_seconds(expires_at),
+                    time_difference_seconds(expires_at)
                 )
+
+
                 return RedirectResponse(
                     url=client_url,
                     status_code=302,
                     headers={
                         'Content-Type': 'text/html',
-                        'Set-Cookie': cookie_str
+                        'Set-Cookie': cookie_str,
                     }
                 )
             except Exception as e:

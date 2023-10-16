@@ -14,18 +14,16 @@ import {
 } from "@azure/communication-react";
 
 import axios from "axios";
-import { useVADRecorder } from "../hooks";
 
 initializeIcons();
 registerIcons({ icons: DEFAULT_COMPONENT_ICONS });
 
-function Home(): JSX.Element {
+function Chat(): JSX.Element {
   const GetHistoryChatMessages = (): (
     | CustomMessage
     | SystemMessage
     | ChatMessage
   )[] => {
-    const vad = useVADRecorder();
     return [
       {
         messageType: "chat",
@@ -177,7 +175,7 @@ function Home(): JSX.Element {
   );
 }
 
-export default Home;
+export default Chat;
 const Heading = styled.h1`
   font-size: 36px;
   font-weight: bold;
@@ -192,7 +190,7 @@ const Heading = styled.h1`
 const Container = styled.div`
   display: flex;
   width: 100vw;
-  height: 100%;
+  height: 100vh;
   padding: 2rem;
   padding-bottom: 3rem;
   gap: 2rem;
@@ -231,7 +229,7 @@ const ChatContainer = styled.div`
   padding: 2rem;
   border: 1px solid #ccc;
   background-color: #f9f9f9;
-  max-height: 80vh;
+  max-height: 100vh;
   box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.1);
 `;
 

@@ -2,39 +2,37 @@ import { Center, Text } from "@chakra-ui/react";
 
 import { useVADRecorder } from "../hooks";
 import { RecorderError } from "../components/";
+import Chat from "./Chat";
 
 const HomePage = () => {
   const vad = useVADRecorder();
 
-  if (vad.loading) {
-    return (
-      <Center minHeight="100vh">
-        <Text color={"black"}>VAD loading...</Text>
-      </Center>
-    );
-  } else if (vad.errored) {
-    return (
-      <Center minHeight="100vh">
-        <RecorderError message={vad.errored.message} />{" "}
-      </Center>
-    );
-  } else if (vad.userSpeaking) {
-    return (
-      <Center minHeight="100vh">
-        <Text fontSize="md" color={"black"}>
-          User speaking is speaking.
-        </Text>
-      </Center>
-    );
-  } else {
-    return (
-      <Center minHeight="100vh">
-        <Text fontSize="md" color={"black"}>
-          VAD is actively listening.
-        </Text>
-      </Center>
-    );
-  }
+  return (
+    <>
+      {vad.loading ? (
+        <Center>
+          <Text color={"black"}>VAD loading...</Text>
+        </Center>
+      ) : vad.errored ? (
+        <Center>
+          <RecorderError message={vad.errored.message} />
+        </Center>
+      ) : vad.userSpeaking ? (
+        <Center>
+          <Text fontSize="md" color={"black"}>
+            User speaking is speaking.
+          </Text>
+        </Center>
+      ) : (
+        <Center>
+          <Text fontSize="md" color={"black"}>
+            VAD is actively listening.
+          </Text>
+        </Center>
+      )}
+      <Chat />
+    </>
+  );
 };
 
 export default HomePage;
