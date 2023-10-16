@@ -4,7 +4,7 @@ import { useCookie } from "./hooks";
 
 const App = () => {
   const [cookie, setCookie] = useCookie();
-  console.log(cookie, "cookkie");
+  console.log(cookie, "session toekne");
   return (
     <Router>
       <Routes>

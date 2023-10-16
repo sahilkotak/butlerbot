@@ -23,6 +23,32 @@ class Merchant:
         self.merchant_table = ddb.Table("merchant")
         self.merchandise_table = ddb.Table("merchandise")
     
+    def get_menu(self, query_params):
+        """
+        Retrieve merchant information based on access_token or merchant_id.
+
+        Args:
+            query_params (dict): Dictionary containing 'access_token' and 'merchant_id'.
+
+        Returns:
+            dict or None: Retrieved merchant information or None if not found.
+        """
+        # access_token = query_params.get("access_token")
+        access_token = "EAAAEBt07P6tvxI2FsjQJQdThewQaq9s-erZHsIsOiTpj0KUv4h7Jq1V7CawvzK8"
+        merchant_id = "MLF15C4CDSG4S"
+        
+        try:
+            # Retrieve merchant by access_token
+            
+            response = self.merchandise_table.scan(
+                FilterExpression=Attr("merchant_id").eq(merchant_id)
+            )
+            return response
+           
+        except ClientError as e:
+            logging.error("Error retrieving merchant data: " + str(e))
+            raise
+    
     def get_merchant(self, query_params):
         """
         Retrieve merchant information based on access_token or merchant_id.
@@ -46,11 +72,12 @@ class Merchant:
                 response = self.merchant_table.scan(
                     FilterExpression=Attr("access_token").eq(access_token)
                 )
+                logging.info(response)
                 items = response.get('Items', [])
                 if items:
                     return items[0]
                 else:
-                    return None
+                    return []
         except ClientError as e:
             logging.error("Error retrieving merchant data: " + str(e))
             raise

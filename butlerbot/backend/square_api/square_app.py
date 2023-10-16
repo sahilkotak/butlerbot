@@ -33,6 +33,13 @@ def authorise():
         'Set-Cookie': cookie_str
     })
 
+async def getItems(checkout_params):
+    merchant = Merchant()
+    data = merchant.get_menu(query_params=checkout_params)
+
+    return JSONResponse(content=data, status_code=200)
+
+
 async def create_checkout(checkout_params):
     """
     Create a checkout and return the payment link.
@@ -47,50 +54,32 @@ async def create_checkout(checkout_params):
     location_id = checkout_params.get('locationId')
     data = checkout_params.get('data')
 
-
-    
-
     if None in [access_token, location_id, data]:
         raise HTTPException(status_code=400, detail="Missing Required Parameters!")
 
     try:
        
-
         client = Client(
             access_token=access_token.split(" ")[1],
             environment=environment
         )
         idempotency_key = str(uuid.uuid4())
 
-        result = client.checkout.create_payment_link(
-            body={
-                "idempotency_key": idempotency_key,
-                "order": {
-                    "location_id": location_id,
-                    "line_items": data["checkoutData"]
-                }
-            }
-        )
-
-        # if(data["source"] == "checkout"): 
-        #     return JSONResponse( {"message": "Checkout successful!", "payment_link": result.body["payment_link"]["url"]}, status_code=200)
-
-        amount = result.body["related_resources"]["orders"][0]["total_money"]
         checkout = client.terminal.create_terminal_checkout(
             body = {
-                "idempotency_key": str(uuid.uuid4()),
+                "idempotency_key": idempotency_key,
                 "checkout": {
-                "amount_money": {
-                    "amount": amount["amount"],
-                    "currency": amount["currency"]
-                },
-                "device_options": {
-                    # "device_id": "device:995CS397A6475287"
-                    "device_id": "841100b9-ee60-4537-9bcf-e30b2ba5e215"
-                }
+                    "device_options": {
+                        "device_id": "da40d603-c2ea-4a65-8cfd-f42e36dab0c7"
+                    },
+                    "amount_money": {
+                        "amount": 20,
+                        "currency": "GBP"
+                    },
                 }
             }
         )
+        logging.info(checkout)
         if checkout.is_success():
             payment_link = checkout.body
             response_data = {"message": "Terminal checkout successful!", "response": payment_link}

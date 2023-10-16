@@ -14,11 +14,16 @@ import {
 } from "@azure/communication-react";
 
 import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useCookie } from "../hooks/useCookie";
 
 initializeIcons();
 registerIcons({ icons: DEFAULT_COMPONENT_ICONS });
 
 function Chat(): JSX.Element {
+  const cookie = useCookie();
+  const [menus, setMenus] = useState([]);
+  // const [currency, setCurrency] = useState([]);
   const GetHistoryChatMessages = (): (
     | CustomMessage
     | SystemMessage
@@ -108,6 +113,30 @@ function Chat(): JSX.Element {
     }
   };
 
+  useEffect(() => {
+    const getMenu = async () => {
+      const response = await axios.post(
+        `${process.env.BUTLERBOT_API_ENDPOINT}/getMenu`,
+        {
+          checkoutData: testCheckoutData,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${cookie}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = JSON.parse(response.data);
+
+      setMenus(data.items);
+      // setCurrency(data.currency);
+    };
+    getMenu();
+
+    // eslint-disable-next-line
+  }, []);
+
   return (
     <>
       <Heading>Stellar Restaurant</Heading>
@@ -115,32 +144,12 @@ function Chat(): JSX.Element {
         <Menu>
           <h1>Our Menu</h1>
           <MenuContainer>
-            <MenuItem>Pasta</MenuItem>
-            <ItemDescription>
-              Delicious pasta served with marinara sauce and garlic bread.
-            </ItemDescription>
-            <MenuItem>Steak</MenuItem>
-            <ItemDescription>
-              Grilled steak cooked to perfection, served with mashed potatoes
-              and vegetables.
-            </ItemDescription>
-            <MenuItem>Salad</MenuItem>
-            <ItemDescription>
-              Fresh salad made with organic greens, cherry tomatoes, and
-              balsamic vinaigrette.
-            </ItemDescription>
-            <MenuItem>Cheesecake</MenuItem>
-            <ItemDescription>
-              Decadent cheesecake topped with strawberries and whipped cream.
-            </ItemDescription>
-            <MenuItem>Burger</MenuItem>
-            <ItemDescription>
-              Decadent cheesecake topped with strawberries and whipped cream.
-            </ItemDescription>
-            <MenuItem>French Fries</MenuItem>
-            <ItemDescription>
-              Decadent cheesecake topped with strawberries and whipped cream.
-            </ItemDescription>
+            {menus.map((item, index) => (
+              <React.Fragment key={index}>
+                <MenuItem>{item.item_name}</MenuItem>
+                <ItemDescription>{item.item_description}</ItemDescription>
+              </React.Fragment>
+            ))}
           </MenuContainer>
         </Menu>
         <ChatContainer>
