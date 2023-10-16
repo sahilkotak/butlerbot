@@ -4,14 +4,17 @@ import base64
 import json
 import time
 import logging
+from fetch_items import fetch_items
+
+
 from fastapi import FastAPI, UploadFile, BackgroundTasks, Header
-from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from ai import get_completion
 from google_api.stt import transcribe
 from google_api.tts import to_speech
-from square_api.square_app import authorise, authorize_callback
+from square_api.square_app import authorise, authorize_callback, create_checkout, getItems
 import uvicorn
 
 app = FastAPI()
@@ -51,6 +54,20 @@ async def authorise_callback(
         },
         cookie=cookie
     )
+
+@app.post("/checkout")
+async def checkout( data: dict, authorization: str = Header(None), locationId: str = Header(None)):
+    
+    checkout_params = {
+        "access_token": authorization,
+        "locationId": locationId,
+        "data": data,
+    }
+    return await create_checkout(checkout_params)
+
+@app.post("/getMenu")
+async def checkout(authorization: str = Header(None)):
+    return fetch_items()
 
 @app.post("/inference")
 async def infer(audio: UploadFile, background_tasks: BackgroundTasks, conversation: str = Header(default=None)):

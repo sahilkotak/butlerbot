@@ -6,3 +6,16 @@ p,
 h1 {
   color: #fff;
 }
+
+.order__item p{
+  color: #000;
+  font-size: 19px;
+}
+.order__item {
+ display: flex;
+ justify-content: center;
+ gap: 20px;
+ font-weight: 700;
+}
+
+

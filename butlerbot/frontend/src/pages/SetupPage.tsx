@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 const SetupPage = ({ onSessionTokenUpdate }) => {
   const { cookie } = useParams();
   const navigate = useNavigate();
+  console.log(cookie);
 
   useEffect(() => {
     onSessionTokenUpdate(cookie);

@@ -43,7 +43,7 @@ def conduct_authorize_url(state):
         The state value that will be verified in the authorizae callback.
     '''
     base_url = os.environ.get("BASE_URL", "https://connect.squareupsandbox.com")
-    permissions = os.environ.get("PERMISSIONS", "ITEMS_READ PAYMENTS_WRITE MERCHANT_PROFILE_READ ORDERS_WRITE ORDERS_READ PAYMENTS_WRITE CUSTOMERS_WRITE CUSTOMERS_READ PAYMENTS_WRITE PAYMENTS_READ PAYMENTS_WRITE PAYMENTS_READ")
+    permissions = os.environ.get("PERMISSIONS", "ITEMS_READ PAYMENTS_WRITE MERCHANT_PROFILE_READ CUSTOMERS_READ PAYMENTS_READ DEVICE_CREDENTIAL_MANAGEMENT")
 
     authorize_url = (
         base_url + '/oauth2/authorize'

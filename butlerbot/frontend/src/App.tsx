@@ -4,28 +4,26 @@ import { useCookie } from "./hooks";
 
 const App = () => {
   const [cookie, setCookie] = useCookie();
-
+  console.log(cookie, "session toekne");
   return (
-    <>
-      <Router>
-        <Routes>
-          <Route
-            path="/index.html"
-            element={
-              cookie ? (
-                <HomePage />
-              ) : (
-                <LoginPage onSessionTokenUpdate={setCookie} />
-              )
-            }
-          />
-          {/* <Route
+    <Router>
+      <Routes>
+        <Route
+          path="/index.html"
+          element={
+            cookie ? (
+              <HomePage />
+            ) : (
+              <LoginPage onSessionTokenUpdate={setCookie} />
+            )
+          }
+        />
+        {/* <Route
             path="/setup/:cookie"
             element={<SetupPage onSessionTokenUpdate={setCookie} />}
           /> */}
-        </Routes>
-      </Router>
-    </>
+      </Routes>
+    </Router>
   );
 };
 
