@@ -5,7 +5,13 @@ const Chat = ({ messages, botStatus }) => {
   return (
     <ChatContainer>
       <FluentThemeProvider>
-        <MessageThread userId={"1"} messages={messages} />
+        {messages.length > 0 ? (
+          <MessageThread userId={"1"} messages={messages} />
+        ) : (
+          <div className="bot">
+            <img src="https://i.imgur.com/EslQFq9.png" alt="bot" />
+          </div>
+        )}
       </FluentThemeProvider>
 
       <p>{botStatus}</p>
@@ -31,5 +37,11 @@ const ChatContainer = styled.div`
     justify-content: center;
     align-items: center;
     gap: 10px;
+  }
+  .bot {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 `;

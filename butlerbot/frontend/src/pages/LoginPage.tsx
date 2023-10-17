@@ -6,62 +6,30 @@ import {
   Stack,
   Text,
   Icon,
-  useToast,
+  // useToast,
 } from "@chakra-ui/react";
 import { BiCheckboxSquare, BiBot } from "react-icons/bi";
+import { setCookie } from "../hooks/useCookie";
+import { useNavigate } from "react-router-dom";
 
-const LoginPage = ({ onSessionTokenUpdate }) => {
-  const toast = useToast();
-
-  // handlers
+const LoginPage = () => {
+  const navigate = useNavigate();
   const handleSignInWithDemoAccount = () => {
-    // eslint-disable-next-line no-undef
-    const demoAccountToken = process.env.DEMO_BUTLERBOT_APP_SESSION_TOKEN;
-    const demoAccountDeviceId = process.env.DEMO_BUTLERBOT_APP_DEVICE_ID;
-    if (!demoAccountToken) {
-      toast({
-        title: "Application error.",
-        description:
-          "Application not configured properly. Missing required configurations - DEMO_BUTLERBOT_APP_SESSION_TOKEN.",
-        status: "error",
-        duration: 9000,
-        isClosable: true,
-      });
+    setCookie(
+      "X-ButlerBot-Active-Session-Token",
+      process.env.X_ButlerBot_Active_Session_Token
+    );
+    setCookie("X-ButlerBot-Merchant-Id", process.env.X_ButlerBot_Merchant_Id);
+    setCookie(
+      "X-ButlerBot-Merchant-Name",
+      process.env.X_ButlerBot_Merchant_Name
+    );
+    setCookie("X-ButlerBot-Merchant-Loc", process.env.X_ButlerBot_Merchant_Loc);
 
-      return;
-    }
-    if (!demoAccountDeviceId) {
-      toast({
-        title: "Application error.",
-        description:
-          "Application not configured properly. Missing required configurations - DEMO_BUTLERBOT_APP_DEVICE_ID.",
-        status: "error",
-        duration: 9000,
-        isClosable: true,
-      });
-
-      return;
-    }
-
-    onSessionTokenUpdate(demoAccountToken);
+    navigate("/index.html", { replace: true });
   };
 
   const handleSignInWithSquare = () => {
-    // eslint-disable-next-line no-undef
-    // if (!process.env.BUTLERBOT_API_ENDPOINT) {
-    //   toast({
-    //     title: "Application error.",
-    //     description:
-    //       "Application not configured properly. Missing required configurations - BUTLERBOT_API_ENDPOINT.",
-    //     status: "error",
-    //     duration: 9000,
-    //     isClosable: true,
-    //   });
-
-    //   return;
-    // }
-
-    // eslint-disable-next-line no-undef
     window.location.href = `/authorise`;
   };
 

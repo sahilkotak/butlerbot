@@ -180,19 +180,21 @@ async def authorize_callback(query_params, cookie):
                 merchant.add_merchant(merchant_obj=merchant_obj)
                 logging.info("Merchant record added/updated.")
 
-                logging.info("fetching merchandise items")
+
                 merchandise_details_response = square_client.catalog.list_catalog(
                     types = "ITEM"
                 )
+                logging.info("Merchant record added/updated", merchant_obj)
                 
                 merchandise_details = merchandise_details_response.body
+                logging.info("merchandise_detailsobjects", merchandise_details["objects"])
                 if merchandise_details and merchandise_details["objects"]:
                     merchandise_items = merchandise_details["objects"]
                     merchant_merchandise = merchant.add_merchandise(merchant_obj, merchandise_items)
-                    # logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
+                    logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
 
-                    device_details_response = square_client.devices.list_device_codes(location_id=merchant_location_id)
-                    device_details = device_details_response.body
+                    # device_details_response = square_client.devices.list_device_codes(location_id=merchant_location_id)
+                    # device_details = device_details_response.body
                     # if device_details and device_details["device_codes"]:
                     #     device_detail = device_details["device_codes"][0]
                     #     device_id = device_detail["id"]
