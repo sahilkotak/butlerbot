@@ -1,7 +1,6 @@
 import os
 import logging
 import boto3
-import attr
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Attr
 from boto3.dynamodb.conditions import Key
@@ -122,13 +121,12 @@ class Merchant:
         items = []
 
         for merch_item in merchandise_items:
-            for merch_variant in merch_item["item_data"]["variations"]:
+            merch_item_data = merch_item["item_data"]
+            for merch_variant in merch_item_data["variations"]:
                 item = dict(merchant_id = merchant["id"])
-                item["item_name"] = merch_item["item_data"]["name"]
-                if hasattr(merch_item["item_data"], "description"):
-                    item["item_description"] = merch_item["item_data"]["description"]
-                elif hasattr(merch_item["item_data"], "description_plaintext"):
-                    item["item_description"] = merch_item["item_data"]["description_plaintext"]
+                item["item_name"] = merch_item_data["name"]
+
+                item["item_description"] = merch_item_data["description_plaintext"]
                 
                 item["merchandise_id"] = merch_variant["id"]
                 item["variation_name"] = merch_variant["item_variation_data"]["name"]
