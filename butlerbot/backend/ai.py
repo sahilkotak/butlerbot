@@ -11,13 +11,6 @@ from fetch_items import fetch_items
 
 AI_COMPLETION_MODEL = os.getenv("AI_COMPLETION_MODEL", "gpt-3.5-turbo-0613")
 LANGUAGE = os.getenv("LANGUAGE", "en")
-INITIAL_PROMPT = f"You are ButlerBot - a helpful drive through assistant with a voice interface. Greet, take orders, confirm with price, share promotions, ask for additions, inform wait time, and guide to next window. Keep your responses very succinct and limited to a single sentence since the user is interacting with you through a voice interface. \
-Ordering Instructions: \
-Available Menu Items: {fetch_items()}. \
-Important Notes: \
-- item_description is detail about particular item_name, only mention that if the user explicitly asks details about the item. \
-- IMPORTANT: DO NOT ALLOW orders for item_name that are not in the available menu items. \
-- If you're passing a list then do it in sentence structure, since your response will turn into audio."
 
 machine_instructions = {}
 
@@ -36,7 +29,15 @@ def checkout() -> Dict:
     return {"message": "Checkout initiated"}
 
 
-async def get_completion(user_prompt, conversation_thus_far):
+async def get_completion(user_prompt, conversation_thus_far, merchant_id):
+    INITIAL_PROMPT = f"You are ButlerBot - a helpful drive through assistant with a voice interface. Greet, take orders, confirm with price, share promotions, ask for additions, inform wait time, and guide to next window. Keep your responses very succinct and limited to a single sentence since the user is interacting with you through a voice interface. \
+Ordering Instructions: \
+Available Menu Items: {fetch_items(merchant_id)}. \
+Important Notes: \
+- item_description is detail about particular item_name, only mention that if the user explicitly asks details about the item. \
+- IMPORTANT: DO NOT ALLOW orders for item_name that are not in the available menu items. \
+- If you're passing a list then do it in sentence structure, since your response will turn into audio."
+    
     if _is_empty(user_prompt):
         raise ValueError("empty user prompt received")
 
@@ -54,9 +55,17 @@ async def get_completion(user_prompt, conversation_thus_far):
     # Define the functions that the model can call
     functions = [
         {
-            "name": "fetch_items",
-            "description": "Fetch menu items from the menu card.",
-            "parameters": {"type": "object", "properties": {}},
+        "name": "fetch_items",
+        "description": "Fetch menu items from the menu card.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "include_description": {
+                    "type": "boolean",
+                    "description": "If the user asks for item description then send True."
+                    }
+                },
+            },
         },
         {
             "name": "add_to_cart",
@@ -97,7 +106,7 @@ async def get_completion(user_prompt, conversation_thus_far):
 
         # Call the function and get the response
         if function_name == 'fetch_items':
-            function_response = fetch_items()
+            function_response = fetch_items(merchant_id)
         elif function_name == 'add_to_cart':
             function_response = add_to_cart(**function_args)
         elif function_name == 'checkout':
