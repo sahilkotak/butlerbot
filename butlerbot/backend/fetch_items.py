@@ -10,7 +10,10 @@ class Config:
     #DB_ACCESS_KEY_ID = os.getenv("DB_ACCESS_KEY_ID")
     #DB_SECRET_ACCESS_KEY = os.getenv("DB_SECRET_ACCESS_KEY")
 
-def fetch_items():
+def fetch_items(include_description=False, merchant_id=None):
+    if merchant_id is None:
+        merchant_id = 'MLF15C4CDSG4S'
+
     dynamodb = boto3.resource(
         "dynamodb",
         #region_name=Config.DB_REGION_NAME,
@@ -21,7 +24,7 @@ def fetch_items():
 
     # Fetch items for a specific merchant
     response = table.query(
-        KeyConditionExpression=Key('merchant_id').eq('MLF15C4CDSG4S')
+        KeyConditionExpression=Key('merchant_id').eq(merchant_id)
     )
 
     items = response['Items']
@@ -30,14 +33,15 @@ def fetch_items():
     items_details = []
     for item in items:
         item_details = {
-            'item_description': item['item_description'],
             'item_name': item['item_name'].title(),  # Convert item name to title case
             'price': str(Decimal(item['price'])),  # Convert Decimal to string to avoid JSON serialization error
             'variation_name': item['variation_name'],
             'currency': response['Items'][0]['currency'],
         }
+        if include_description:
+                item_details['item_description'] = item['item_description']
         items_details.append(item_details)
-
+        
     # Currency code is stored in the 'currency' field in the DynamoDB table
     currency_code = response['Items'][0]['currency']
 

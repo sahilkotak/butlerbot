@@ -17,6 +17,7 @@ from google_api.stt import transcribe
 from google_api.tts import to_speech
 from square_api.square_app import authorise, authorize_callback, create_checkout, getItems
 import uvicorn
+from context import get_merchant_id
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
@@ -77,18 +78,18 @@ async def get_menu(ButlerbotMerchantId: str = Header(None)):
     return merchant.get_menu(query_params)
 
 @app.post("/inference")
-async def infer(audio: UploadFile, background_tasks: BackgroundTasks, conversation: str = Header(default=None)):
+async def infer(audio: UploadFile, background_tasks: BackgroundTasks, conversation: str = Header(default=None), merchant_id: str = Depends(get_merchant_id)):
     logging.debug("received request")
     start_time = time.time()
-    user_prompt_text = await transcribe(audio)
-    ai_response_text, machine_instructions = await get_completion(user_prompt_text, conversation)
+    user_prompt_text, error_occurred = await transcribe(audio, merchant_id)
+    ai_response_text, machine_instructions = (user_prompt_text, None) if error_occurred else await get_completion(user_prompt_text, conversation, merchant_id)
     ai_response_audio_filepath = await to_speech(ai_response_text, background_tasks)
     logging.info('total processing time: %s %s', time.time() - start_time, 'seconds')
     with open(ai_response_audio_filepath, "rb") as audio_file:
         audio_data = audio_file.read()
     response = {
         "createdOn": start_time,
-        "user_prompt": user_prompt_text,
+        "user_prompt": None if error_occurred else user_prompt_text,
         "ai_response": ai_response_text,
         "instructions": machine_instructions,
         "audio_data": base64.b64encode(audio_data).decode('utf-8')
