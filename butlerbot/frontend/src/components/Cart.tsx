@@ -1,45 +1,36 @@
-import { useEffect } from "react";
-import styled from "styled-components";
-import { getCookie } from "../hooks/useCookie";
 import axios from "axios";
+import { useEffect, useState } from "react";
+import styled from "styled-components";
+import ModalContainer from "./ModalContainer";
+import { getCookie } from "../hooks/useCookie";
 
 const Cart = ({ items, action }) => {
-  // handlers
+  const [showModal, setShowModal] = useState({});
+  const access_token = getCookie("X-ButlerBot-Active-Session-Token");
   const handleCheckOut = async () => {
-    // Get session token from cookie
-    const sessionToken = getCookie("X-ButlerBot-Active-Session-Token");
-    const deviceId = getCookie("X-ButlerBot-Merchant-Loc");
-
-    if (sessionToken && deviceId) {
-      try {
-        const response = await axios.post(
-          `/checkout`,
-          {
-            checkoutData: items,
+    try {
+      const response = await axios.post(
+        `/checkout`,
+        {
+          checkoutData: items,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${access_token}`,
+            deviceId: "9fa747a2-25ff-48ee-b078-04381f7c828f",
           },
-          {
-            headers: {
-              Authorization: `Bearer ${sessionToken}`,
-              deviceId: deviceId,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (response.status === 200) {
-          alert(`
-              message
-                ${response.data.message}
-              Checkout Id:
-                ${response.data.response.checkout.id}`);
-        } else {
-          console.error(`Error: ${response.status} - ${response.statusText}`);
         }
-      } catch (error) {
-        console.error("Error:", error);
+      );
+
+      if (response.status === 200) {
+        setShowModal({ display: true, content: true });
+      } else {
+        setShowModal({ display: true, content: false });
+        console.error(`Error: ${response.status} - ${response.statusText}`);
       }
-    } else {
-      console.log("Session Token not found.");
+    } catch (error) {
+      console.error("Error:", error);
     }
   };
 
@@ -54,7 +45,7 @@ const Cart = ({ items, action }) => {
       console.log("unknown action requested - ", action);
     }
 
-    // eslint-disable-next-line
+    //eslint-disable-next-line
   }, [action]);
 
   return (
@@ -75,10 +66,9 @@ const Cart = ({ items, action }) => {
           </div>
         </CartActions>
       </CartItemContainer>
-
-      {/* <CheckoutButton onClick={handleCheckOut}>
-        Proceed to Payment
-      </CheckoutButton> */}
+      {showModal && (
+        <ModalContainer showModal={showModal} setShowModal={setShowModal} />
+      )}
     </CartContainer>
   );
 };

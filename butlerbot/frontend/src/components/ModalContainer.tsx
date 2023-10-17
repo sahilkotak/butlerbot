@@ -10,18 +10,17 @@ import {
 import { useEffect, useState } from "react";
 import { BiLogoCreativeCommons } from "react-icons/bi";
 
-const ModalContainer = () => {
-  const [isOpen, setIsOpen] = useState(true);
+const ModalContainer = ({ showModal, setShowModal }) => {
   const [showContent, setShowContent] = useState(false);
   useEffect(() => {
     let timeout1;
     let timeout2;
-    if (isOpen) {
+    if (showModal.display) {
       timeout1 = setTimeout(() => {
         setShowContent(true);
       }, 3000);
       timeout2 = setTimeout(() => {
-        setIsOpen(false);
+        setShowModal(false);
       }, 6000);
     }
     // Cleanup timeouts when isOpen changes to false
@@ -29,14 +28,21 @@ const ModalContainer = () => {
       clearTimeout(timeout1);
       clearTimeout(timeout2);
     };
-  }, [isOpen]);
+    // eslint-disable-next-line
+  }, [showModal]);
 
   return (
-    <Modal blockScrollOnMount={false} isOpen={isOpen} onClose={() => {}}>
+    <Modal
+      blockScrollOnMount={false}
+      isOpen={showModal.display}
+      onClose={() => {}}
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          Display your card to complete your transaction
+          {showModal.content
+            ? " Display your card to complete your transaction"
+            : "Something went Wrong"}
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
