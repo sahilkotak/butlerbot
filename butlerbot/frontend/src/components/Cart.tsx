@@ -1,45 +1,47 @@
 import { useEffect } from "react";
 import styled from "styled-components";
+import { getCookie } from "../hooks/useCookie";
+import axios from "axios";
 
 const Cart = ({ items, action }) => {
   // handlers
-  // const handleCheckOut = async () => {
-  //   // Get session token from cookie
-  //   const sessionToken = getCookie("X-ButlerBot-Active-Session-Token");
-  //   const locationId = getCookie("X-ButlerBot-Merchant-Loc");
+  const handleCheckOut = async () => {
+    // Get session token from cookie
+    const sessionToken = getCookie("X-ButlerBot-Active-Session-Token");
+    const deviceId = getCookie("X-ButlerBot-Merchant-Loc");
 
-  //   if (sessionToken && locationId) {
-  //     try {
-  //       const response = await axios.post(
-  //         `/checkout`,
-  //         {
-  //           checkoutData: testCheckoutData,
-  //         },
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${sessionToken}`,
-  //             locationId: locationId,
-  //             "Content-Type": "application/json",
-  //           },
-  //         }
-  //       );
+    if (sessionToken && deviceId) {
+      try {
+        const response = await axios.post(
+          `/checkout`,
+          {
+            checkoutData: items,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${sessionToken}`,
+              deviceId: deviceId,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-  //       if (response.status === 200) {
-  //         alert(`
-  //             message
-  //               ${response.data.message}
-  //             Checkout Id:
-  //               ${response.data.response.checkout.id}`);
-  //       } else {
-  //         console.error(`Error: ${response.status} - ${response.statusText}`);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error:", error);
-  //     }
-  //   } else {
-  //     console.log("Session Token not found.");
-  //   }
-  // };
+        if (response.status === 200) {
+          alert(`
+              message
+                ${response.data.message}
+              Checkout Id:
+                ${response.data.response.checkout.id}`);
+        } else {
+          console.error(`Error: ${response.status} - ${response.statusText}`);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    } else {
+      console.log("Session Token not found.");
+    }
+  };
 
   useEffect(() => {
     if (!action) return;
@@ -47,10 +49,12 @@ const Cart = ({ items, action }) => {
     if (action === "add_to_cart") {
       console.log("action - add_to_cart - requested");
     } else if (action === "checkout") {
-      console.log("action - checkout - requested");
+      handleCheckOut();
     } else {
       console.log("unknown action requested - ", action);
     }
+
+    // eslint-disable-next-line
   }, [action]);
 
   return (

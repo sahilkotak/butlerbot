@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   DEFAULT_COMPONENT_ICONS,
   MessageContentType,
@@ -10,8 +10,6 @@ import { MenuItems, Chat, Cart } from "../components/";
 import { getCookie } from "../hooks";
 
 import { useVADRecorder } from "../hooks";
-import axios from "axios";
-// import { RecorderError } from "../components/";
 
 initializeIcons();
 registerIcons({ icons: DEFAULT_COMPONENT_ICONS });
@@ -77,111 +75,6 @@ const HomePage = () => {
       updateCartItems(response);
     },
   });
-
-  const [menus, setMenus] = useState([]);
-  // const [chatMessages, setChatMessages] = useState([]);
-  const GetHistoryChatMessages = (): ChatMessage[] => {
-    return [
-      {
-        messageType: "chat",
-        contentType: "text" as MessageContentType,
-        senderId: "1",
-        senderDisplayName: "You",
-        messageId: Math.random().toString(),
-        content: "Hey! Can I grab a beer please?",
-        createdOn: new Date("2019-04-13T00:00:00.000+08:10"),
-        mine: false,
-      },
-      {
-        messageType: "chat",
-        contentType: "text" as MessageContentType,
-        senderId: "2",
-        senderDisplayName: "Bot",
-        messageId: Math.random().toString(),
-        content: "Sure, which brand?",
-        createdOn: new Date("2019-04-13T00:00:00.000+08:09"),
-        mine: true,
-      },
-    ];
-  };
-  const testCheckoutData = [
-    {
-      catalog_object_id: "QQZ6ZOA3IUB2HFAHW7W7GVAP",
-      quantity: "1",
-    },
-  ];
-
-  const getCookieValue = (cookieName) => {
-    const cookies = document.cookie.split("; ");
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].split("=");
-      if (cookie[0] === cookieName) {
-        return cookie[1];
-      }
-    }
-    return null;
-  };
-
-  const handleCheckOut = async () => {
-    // Get session token from cookie
-    const sessionToken = getCookieValue("X-ButlerBot-Active-Session-Token");
-    const deviceId = getCookieValue("X-ButlerBot-Merchant-Loc");
-
-    if (sessionToken && deviceId) {
-      try {
-        const response = await axios.post(
-          `${process.env.BUTLERBOT_API_ENDPOINT}/checkout`,
-          {
-            checkoutData: testCheckoutData,
-          },
-          {
-            headers: {
-              deviceId: deviceId,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (response.status === 200) {
-          alert(`
-              message
-                ${response.data.message} 
-              Checkout Id:  
-                ${response.data.response.checkout.id}`);
-        } else {
-          console.error(`Error: ${response.status} - ${response.statusText}`);
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    } else {
-      console.log("Session Token not found.");
-    }
-  };
-
-  useEffect(() => {
-    const merchant_id = getCookieValue("X-ButlerBot-Merchant-Id");
-
-    const getMenu = async () => {
-      const response = await axios.get(
-        `${process.env.BUTLERBOT_API_ENDPOINT}/get-menu`,
-        {
-          headers: {
-            Authorization: merchant_id,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response.status === 200) {
-        setMenus(response.data);
-      } else {
-        setMenus([]);
-      }
-    };
-    getMenu();
-
-    // eslint-disable-next-line
-  }, []);
 
   return (
     <>
