@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { BiCheckboxSquare, BiBot } from "react-icons/bi";
 
-const LoginPage = ({ onSessionTokenUpdate }) => {
+const LoginPage = ({ onSessionTokenUpdate, setIsDemoAccount }) => {
   const toast = useToast();
 
   // handlers
@@ -42,26 +42,11 @@ const LoginPage = ({ onSessionTokenUpdate }) => {
 
       return;
     }
-
+    setIsDemoAccount(true);
     onSessionTokenUpdate(demoAccountToken);
   };
 
   const handleSignInWithSquare = () => {
-    // eslint-disable-next-line no-undef
-    // if (!process.env.BUTLERBOT_API_ENDPOINT) {
-    //   toast({
-    //     title: "Application error.",
-    //     description:
-    //       "Application not configured properly. Missing required configurations - BUTLERBOT_API_ENDPOINT.",
-    //     status: "error",
-    //     duration: 9000,
-    //     isClosable: true,
-    //   });
-
-    //   return;
-    // }
-
-    // eslint-disable-next-line no-undef
     window.location.href = `/authorise`;
   };
 
