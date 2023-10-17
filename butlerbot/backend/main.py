@@ -12,6 +12,7 @@ from fastapi import FastAPI, UploadFile, BackgroundTasks, Header
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Depends
 from ai import get_completion
 from google_api.stt import transcribe
 from google_api.tts import to_speech
