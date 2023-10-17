@@ -19,7 +19,9 @@ import { RecorderError } from "../components/";
 
 const HomePage = () => {
   const vad = useVADRecorder();
+
   const [menus, setMenus] = useState([]);
+  const [chatMessages, setChatMessages] = useState([]);
   const GetHistoryChatMessages = (): ChatMessage[] => {
     return [
       {
@@ -54,6 +56,7 @@ const HomePage = () => {
     { id: 1, name: "Pasta", quantity: 1 },
     { id: 2, name: "Steak", quantity: 1 },
   ];
+
   const getCookieValue = (cookieName) => {
     const cookies = document.cookie.split("; ");
     for (let i = 0; i < cookies.length; i++) {
@@ -149,25 +152,25 @@ const HomePage = () => {
                   </React.Fragment>
                 ))
               ) : (
-                <MenuItem>No Items Found</MenuItem>
+                <MenuItem>No Menus Found</MenuItem>
               )}
             </MenuContainer>
           </Menu>
           <ChatContainer>
             <FluentThemeProvider>
               <MessageThread userId={"1"} messages={GetHistoryChatMessages()} />
+              {vad.loading ? (
+                <Text>VAD loading...</Text>
+              ) : vad.errored ? (
+                <RecorderError message={vad.errored.message} />
+              ) : vad.userSpeaking ? (
+                <Text>User speaking is speaking.</Text>
+              ) : (
+                <Text>
+                  VAD is actively listening. <Spinner />
+                </Text>
+              )}
             </FluentThemeProvider>
-            {vad.loading ? (
-              <Text>VAD loading...</Text>
-            ) : vad.errored ? (
-              <RecorderError message={vad.errored.message} />
-            ) : vad.userSpeaking ? (
-              <Text>User speaking is speaking.</Text>
-            ) : (
-              <Text>
-                VAD is actively listening. <Spinner />
-              </Text>
-            )}
           </ChatContainer>
           <CartContainer>
             <CartItemContainer>
