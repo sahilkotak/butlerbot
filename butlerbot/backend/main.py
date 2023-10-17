@@ -70,9 +70,9 @@ async def checkout(data: dict, authorization: str = Header(None), locationId: st
     return await create_checkout(checkout_params)
 
 @app.get("/get-menu")
-async def get_menu(ButlerbotMerchantId: str = Header(None)):
+async def get_menu(merchant_id: str = Depends(get_merchant_id)):
     query_params = {
-        "merchant_id": ButlerbotMerchantId,
+        "merchant_id": merchant_id,
     }
     logging.info("qp: ", query_params)
     merchant = Merchant()
