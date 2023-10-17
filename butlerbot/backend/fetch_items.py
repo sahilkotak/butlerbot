@@ -10,9 +10,9 @@ class Config:
     #DB_ACCESS_KEY_ID = os.getenv("DB_ACCESS_KEY_ID")
     #DB_SECRET_ACCESS_KEY = os.getenv("DB_SECRET_ACCESS_KEY")
 
-def fetch_items(include_description=False, merchant_id=None):
-    if merchant_id is None:
-        merchant_id = 'MLF15C4CDSG4S'
+def fetch_items(merchant_id=None, include_description=False):
+    # if merchant_id is None:
+    #     merchant_id = 'MLF15C4CDSG4S'
 
     dynamodb = boto3.resource(
         "dynamodb",
