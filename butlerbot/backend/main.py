@@ -32,8 +32,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
 @app.get("/authorise")
 async def authorise_client():
     return authorise()
@@ -59,11 +57,11 @@ async def authorise_callback(
     )
 
 @app.post("/checkout")
-async def checkout( data: dict, authorization: str = Header(None), locationId: str = Header(None)):
+async def checkout( data: dict, authorization: str = Header(None), deviceId: str = Header(None)):
     
     checkout_params = {
         "access_token": authorization,
-        "locationId": locationId,
+        "device_id": deviceId,
         "data": data,
     }
     return await create_checkout(checkout_params)

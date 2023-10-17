@@ -51,10 +51,10 @@ async def create_checkout(checkout_params):
         JSONResponse: Response containing payment link or error message.
     """
     access_token = checkout_params.get('access_token')
-    location_id = checkout_params.get('locationId')
+    device_id = checkout_params.get('device_id')
     data = checkout_params.get('data')
 
-    if None in [access_token, location_id, data]:
+    if None in [access_token, device_id,  data]:
         raise HTTPException(status_code=400, detail="Missing Required Parameters!")
 
     try:
@@ -63,14 +63,13 @@ async def create_checkout(checkout_params):
             access_token=access_token.split(" ")[1],
             environment=environment
         )
-        idempotency_key = str(uuid.uuid4())
 
         checkout = client.terminal.create_terminal_checkout(
             body = {
-                "idempotency_key": idempotency_key,
+                "idempotency_key": str(uuid.uuid4()),
                 "checkout": {
                     "device_options": {
-                        "device_id": "da40d603-c2ea-4a65-8cfd-f42e36dab0c7"
+                        "device_id": device_id
                     },
                     "amount_money": {
                         "amount": 20,

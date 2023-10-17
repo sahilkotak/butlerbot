@@ -1,4 +1,5 @@
 import { Spinner, Text } from "@chakra-ui/react";
+import { ChatIcon, PhoneIcon } from "@chakra-ui/icons";
 import {
   FluentThemeProvider,
   DEFAULT_COMPONENT_ICONS,
@@ -16,12 +17,13 @@ registerIcons({ icons: DEFAULT_COMPONENT_ICONS });
 
 import { useVADRecorder } from "../hooks";
 import { RecorderError } from "../components/";
+import ModalContainer from "../components/ModalContainer";
 
 const HomePage = () => {
   const vad = useVADRecorder();
 
   const [menus, setMenus] = useState([]);
-  const [chatMessages, setChatMessages] = useState([]);
+  // const [chatMessages, setChatMessages] = useState([]);
   const GetHistoryChatMessages = (): ChatMessage[] => {
     return [
       {
@@ -71,9 +73,9 @@ const HomePage = () => {
   const handleCheckOut = async () => {
     // Get session token from cookie
     const sessionToken = getCookieValue("X-ButlerBot-Active-Session-Token");
-    const locationId = getCookieValue("X-ButlerBot-Merchant-Loc");
+    const deviceId = getCookieValue("X-ButlerBot-Merchant-Loc");
 
-    if (sessionToken && locationId) {
+    if (sessionToken && deviceId) {
       try {
         const response = await axios.post(
           `${process.env.BUTLERBOT_API_ENDPOINT}/checkout`,
@@ -82,8 +84,7 @@ const HomePage = () => {
           },
           {
             headers: {
-              Authorization: `Bearer ${sessionToken}`,
-              locationId: locationId,
+              deviceId: deviceId,
               "Content-Type": "application/json",
             },
           }
@@ -135,6 +136,7 @@ const HomePage = () => {
       <>
         <Heading>{getCookieValue("X-ButlerBot-Merchant-Name")}</Heading>
         <Container>
+          <ModalContainer />
           <Menu>
             <h1>Our Menu</h1>
             <MenuContainer>
@@ -159,18 +161,24 @@ const HomePage = () => {
           <ChatContainer>
             <FluentThemeProvider>
               <MessageThread userId={"1"} messages={GetHistoryChatMessages()} />
-              {vad.loading ? (
-                <Text>VAD loading...</Text>
-              ) : vad.errored ? (
-                <RecorderError message={vad.errored.message} />
-              ) : vad.userSpeaking ? (
-                <Text>User speaking is speaking.</Text>
-              ) : (
-                <Text>
-                  VAD is actively listening. <Spinner />
-                </Text>
-              )}
             </FluentThemeProvider>
+            {vad.loading ? (
+              <Text>
+                <Spinner /> VAD loading...
+              </Text>
+            ) : vad.errored ? (
+              <RecorderError message={vad.errored.message} />
+            ) : vad.userSpeaking ? (
+              <Text>
+                <ChatIcon />
+                User speaking is speaking...
+              </Text>
+            ) : (
+              <Text>
+                <PhoneIcon />
+                Bot is actively listening...
+              </Text>
+            )}
           </ChatContainer>
           <CartContainer>
             <CartItemContainer>
@@ -265,15 +273,17 @@ const ItemDescription = styled.div`
 const ChatContainer = styled.div`
   flex: 1;
   padding: 2rem;
+  padding-bottom: 3rem;
   border: 1px solid #ccc;
   background-color: #f9f9f9;
   max-height: 90vh;
   box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
   p {
     color: black;
     font-weight: 700;
     font-size: 20px;
-    float: right;
+    float: left;
     display: flex;
     justify-content: center;
     align-items: center;
