@@ -1,12 +1,19 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import ModalContainer from "./ModalContainer";
-import { getCookie } from "../hooks/useCookie";
 
-const Cart = ({ items, action }) => {
+import { getCookie } from "../hooks/useCookie";
+import ModalContainer from "./ModalContainer";
+import { UserAction } from "../enums";
+
+const Cart = ({ items, action, currency }) => {
+  const cartTotal = items.reduce(
+    (total, item) => total + item.quantity * (item.price / 100),
+    0
+  );
   const [showModal, setShowModal] = useState({});
   const access_token = getCookie("X-ButlerBot-Active-Session-Token");
+
   const handleCheckOut = async () => {
     try {
       const response = await axios.post(
@@ -37,38 +44,39 @@ const Cart = ({ items, action }) => {
   useEffect(() => {
     if (!action) return;
 
-    if (action === "add_to_cart") {
+    if (action === UserAction.AddToCart) {
       console.log("action - add_to_cart - requested");
-    } else if (action === "checkout") {
+    } else if (action === UserAction.Checkout) {
       handleCheckOut();
     } else {
       console.log("unknown action requested - ", action);
     }
-
-    //eslint-disable-next-line
+    // eslint-disable-next-line
   }, [action]);
 
   return (
     <CartContainer>
+      <ModalContainer showModal={showModal} setShowModal={setShowModal} />
       <CartItemContainer>
         {items.map((item) => (
           <CartItem key={item.id}>
             <ItemName>{item.name}</ItemName>
             <div>
               <ItemQuantity>{item.quantity}</ItemQuantity>
+              {" x "}
+              <ItemQuantity>
+                {item.price / 100} {currency}
+              </ItemQuantity>
             </div>
           </CartItem>
         ))}
         <CartActions>
           <div>
-            Total: $
-            {items.reduce((total, item) => total + item.quantity * 10, 0)}
+            Total:
+            {cartTotal} {currency}
           </div>
         </CartActions>
       </CartItemContainer>
-      {showModal && (
-        <ModalContainer showModal={showModal} setShowModal={setShowModal} />
-      )}
     </CartContainer>
   );
 };
