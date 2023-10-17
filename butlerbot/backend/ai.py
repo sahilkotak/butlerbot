@@ -5,38 +5,49 @@ import os
 import time
 
 import openai
+from typing import Dict, List, Union
 
-from typing import Dict
-from fetch_items import fetch_items
+from fetch_items import fetch_items, fetch_item_description
 
 AI_COMPLETION_MODEL = os.getenv("AI_COMPLETION_MODEL", "gpt-3.5-turbo-0613")
 LANGUAGE = os.getenv("LANGUAGE", "en")
 
-machine_instructions = {}
-
-
-def add_to_cart(item_name: str, price: float, quantity: int) -> Dict:
-    print(
-        f"add_to_cart function was called with item_name: {item_name}, price: {price} and quantity: {quantity}")
-    machine_instructions.update(
-        {"action": "add_to_cart", "item_name": item_name, "price": price, "quantity": quantity})
+def add_to_cart(machine_instructions: List[Dict], items: List[Dict[str, Union[str, float, int]]]) -> Dict:
+    print(f"add_to_cart function was called with items: {items}")
+    for item in items:
+        item_name = item.get('item_name')
+        price = item.get('price')
+        quantity = item.get('quantity')
+        machine_instructions.append(
+            {"action": "add_to_cart", "item_name": item_name, "price": price, "quantity": quantity})
     return {"message": "Added to cart succesfully!"}
 
 
-def checkout() -> Dict:
+def checkout(machine_instructions: List[Dict]) -> Dict:
     print("checkout function was called")
-    machine_instructions.update({"action": "checkout"})
+    machine_instructions.append({"action": "checkout"})
     return {"message": "Checkout initiated"}
 
 
 async def get_completion(user_prompt, conversation_thus_far, merchant_id):
-    INITIAL_PROMPT = f"You are ButlerBot - a helpful drive through assistant with a voice interface. Greet, take orders, confirm with price, share promotions, ask for additions, inform wait time, and guide to next window. Keep your responses very succinct and limited to a single sentence since the user is interacting with you through a voice interface. \
-Ordering Instructions: \
-Available Menu Items: {fetch_items(merchant_id)}. \
-Important Notes: \
-- item_description is detail about particular item_name, only mention that if the user explicitly asks details about the item. \
-- IMPORTANT: DO NOT ALLOW orders for item_name that are not in the available menu items. \
-- If you're passing a list then do it in sentence structure, since your response will turn into audio."
+    machine_instructions = []
+    INITIAL_PROMPT = f"""
+You are ButlerBot - a helpful drive-through assistant with a voice interface. 
+
+Tasks:
+1. Greet the user or Take order depending upon user's prompt.
+2. Confirm with price.
+3. Call add_to_cart function.
+4. Call checkout function when user is ready with their order.
+5. Guide to the next window.
+
+When presenting menu items from the fetched data:
+- Mention the name, variation, and price of each item.
+- Use conjunctions like 'and' to make it flow naturally.
+- Avoid using dashes or bullet points.
+
+Available Menu Items: {fetch_items(merchant_id)}.
+"""
     
     if _is_empty(user_prompt):
         raise ValueError("empty user prompt received")
@@ -54,31 +65,42 @@ Important Notes: \
 
     # Define the functions that the model can call
     functions = [
-        # {
-        # "name": "fetch_items",
-        # "description": "Fetch menu items from the menu card.",
-        # "parameters": {
-        #     "type": "object",
-        #     "properties": {
-        #         "include_description": {
-        #             "type": "boolean",
-        #             "description": "If the user asks for item description then send True."
-        #             }
-        #         },
-        #     },
-        # },
         {
-            "name": "add_to_cart",
-            "description": "Add an item to the cart",
+            "name": "fetch_items",
+            "description": "Fetch menu items from the menu card.",
+            "parameters": {"type": "object", "properties": {}},
+        },
+        {
+            "name": "fetch_item_description",
+            "description": "Fetch description of a particular item based on the item_name",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "item_name": {"type": "string"},
-                    "price": {"type": "number"},
-                    "quantity": {"type": "number"},
-
                 },
-                "required": ["item_name", "price", "quantity"],
+                "required": ["item_name"],
+            },
+        },
+        {
+            "name": "add_to_cart",
+            "description": "Add multiple items to the cart",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "item_name": {"type": "string"},
+                                "price": {"type": "number"},
+                                "quantity": {"type": "number"},
+                            },
+                            "required": ["item_name", "price", "quantity"],
+                        },
+                    },
+                },
+                "required": ["items"],
             },
         },
         {
@@ -108,9 +130,11 @@ Important Notes: \
         if function_name == 'fetch_items':
             function_response = fetch_items(merchant_id)
         elif function_name == 'add_to_cart':
-            function_response = add_to_cart(**function_args)
+            function_response = add_to_cart(machine_instructions, **function_args)
         elif function_name == 'checkout':
-            function_response = checkout()
+            function_response = checkout(machine_instructions)
+        elif function_name == 'fetch_item_description':
+            function_response = fetch_item_description(item_name=function_args['item_name'], merchant_id=merchant_id)
         else:
             raise ValueError(f"Unknown function: {function_name}")
 
@@ -125,7 +149,7 @@ Important Notes: \
             "name": function_name,
             "content": json.dumps(function_response)
         })
-        res = await openai.ChatCompletion.acreate(model=AI_COMPLETION_MODEL, messages=messages, functions=functions, function_call="auto", timeout=15)
+        res = await openai.ChatCompletion.acreate(model=AI_COMPLETION_MODEL, messages=messages, functions=functions, function_call="none", timeout=15)
 
     # The model generates a user-facing message based on the function's response
     completion = res['choices'][0]['message']['content']
