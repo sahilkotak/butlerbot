@@ -3,6 +3,7 @@ import {
   Button,
   Center,
   Heading,
+  Highlight,
   Stack,
   Text,
   Icon,
@@ -78,7 +79,18 @@ const LoginPage = ({ onSessionTokenUpdate }) => {
         <Stack spacing={4} align="center">
           <Heading size="lg">Welcome to ButlerBot!</Heading>
           <Text color="black" fontSize={"md"}>
-            Please sign in using your <Text as="b">Square</Text> Seller account.
+            <Highlight
+              query={"Square"}
+              styles={{
+                px: "2",
+                py: "1",
+                rounded: "full",
+                bg: "teal.100",
+                fontWeight: "bold",
+              }}
+            >
+              Please sign in using your Square Seller account.
+            </Highlight>
           </Text>
           <Button
             colorScheme="blue"
@@ -88,11 +100,32 @@ const LoginPage = ({ onSessionTokenUpdate }) => {
             Sign in with Square
           </Button>
           <Text color="black" fontSize={"md"}>
-            Don't have a <Text as="b">Square</Text> account? Don't worry we've
-            got you covered 😉.
+            <Highlight
+              query={"Square"}
+              styles={{
+                px: "2",
+                py: "1",
+                rounded: "full",
+                bg: "teal.100",
+                fontWeight: "bold",
+              }}
+            >
+              Don't have a Square account? Don't worry we've got you covered 😉.
+            </Highlight>
           </Text>
           <Text color="black" fontSize={"md"}>
-            Play with our <Text as="b">ButlerBot</Text> Demo account.
+            <Highlight
+              query={"ButlerBot"}
+              styles={{
+                px: "2",
+                py: "1",
+                rounded: "full",
+                bg: "red.100",
+                fontWeight: "bold",
+              }}
+            >
+              Play with our ButlerBot Demo account.
+            </Highlight>
           </Text>
           <Button
             colorScheme="teal"
