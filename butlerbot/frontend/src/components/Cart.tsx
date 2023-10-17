@@ -78,10 +78,10 @@ const Cart = ({ items, action, currency }) => {
               <Stat>
                 <StatNumber>
                   {item.name}
-                  {"   "}
+                  {"        "}
                   <Badge>{item.quantity}</Badge>
-                  {"   "}
-                  <Badge>{`${item.price / 100} ${item.currency}`}</Badge>
+                  {"    "}
+                  <Badge>{`${item.price / 100} ${currency}`}</Badge>
                 </StatNumber>
               </Stat>
               <Divider orientation="horizontal" />
