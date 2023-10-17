@@ -2,12 +2,14 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import {
   Box,
+  Badge,
   Center,
   Divider,
+  Flex,
   Heading,
-  Badge,
   Text,
   Stat,
+  StatLabel,
   StatNumber,
 } from "@chakra-ui/react";
 import styled from "styled-components";
@@ -18,7 +20,7 @@ import { UserAction } from "../enums";
 
 const Cart = ({ items, action, currency }) => {
   const cartTotal = items.reduce(
-    (total, item) => total + item.quantity * (item.price / 100),
+    (total, item) => total + item.quantity * item.price,
     0
   );
   const [showModal, setShowModal] = useState({});
@@ -72,18 +74,20 @@ const Cart = ({ items, action, currency }) => {
 
       <CartContainer>
         <ModalContainer showModal={showModal} setShowModal={setShowModal} />
+
         {items.length > 0 ? (
           items.map((item) => (
             <Box key={item.id}>
-              <Stat>
-                <StatNumber>
-                  {item.name}
-                  {"        "}
-                  <Badge>{item.quantity}</Badge>
-                  {"    "}
-                  <Badge>{`${item.price / 100} ${currency}`}</Badge>
-                </StatNumber>
-              </Stat>
+              <Flex color="white" alignItems="center">
+                <Stat>
+                  <StatNumber color={"black"}>{item.name}</StatNumber>
+                </Stat>
+                <Badge variant="outline">{item.quantity}</Badge>
+                <Text fontSize="sm" color={"black"} margin={"5px"}>
+                  x
+                </Text>
+                <Badge>{`${item.price} ${currency}`}</Badge>
+              </Flex>
               <Divider orientation="horizontal" />
             </Box>
           ))
@@ -94,12 +98,12 @@ const Cart = ({ items, action, currency }) => {
         )}
 
         {items.length > 0 && (
-          <CartActions>
-            <div>
-              Total:
+          <Stat marginTop={"10px"}>
+            <StatLabel>Total</StatLabel>
+            <StatNumber>
               {cartTotal} {currency}
-            </div>
-          </CartActions>
+            </StatNumber>
+          </Stat>
         )}
       </CartContainer>
     </CartWrapper>
@@ -125,39 +129,4 @@ const CartContainer = styled.div`
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.1);
-`;
-
-// const CartItem = styled.div`
-//   display: flex;
-//   justify-content: space-between;
-//   align-items: center;
-//   margin-bottom: 10px;
-// `;
-
-// const ItemName = styled.span`
-//   font-size: 18px;
-//   font-weight: bold;
-// `;
-
-// const ItemQuantity = styled.span`
-//   font-size: 16px;
-//   color: #555;
-//   font-weight: bold;
-//   margin-right: 10px;
-// `;
-// const CartItemContainer = styled.span`
-//   font-size: 14px;
-//   color: #555;
-//   margin-right: 10px;
-// `;
-
-const CartActions = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
-  font-size: 16px;
-  color: #555;
-  font-weight: bold;
-  border-top: 1px solid #ccc;
-  margin-top: 2rem;
 `;

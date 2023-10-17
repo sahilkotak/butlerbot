@@ -1,6 +1,8 @@
 import { FluentThemeProvider, MessageThread } from "@azure/communication-react";
 import styled from "styled-components";
 
+import BotChat from "./BotChat";
+
 const Chat = ({ messages, botStatus }) => {
   return (
     <ChatContainer>
@@ -14,7 +16,7 @@ const Chat = ({ messages, botStatus }) => {
         )}
       </FluentThemeProvider>
 
-      <p>{botStatus}</p>
+      <BotChat status={botStatus} />
     </ChatContainer>
   );
 };
@@ -28,16 +30,8 @@ const ChatContainer = styled.div`
   background-color: #f9f9f9;
   max-height: 90vh;
   box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.1);
-  p {
-    color: black;
-    font-weight: 700;
-    font-size: 20px;
-    float: right;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-  }
+  padding-bottom: 3rem;
+
   .bot {
     height: 100%;
     display: flex;

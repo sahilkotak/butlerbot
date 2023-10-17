@@ -190,6 +190,7 @@ async def authorize_callback(query_params, cookie):
                 logging.info("merchandise_detailsobjects", merchandise_details["objects"])
                 if merchandise_details and merchandise_details["objects"]:
                     merchandise_items = merchandise_details["objects"]
+                    logging.info("merchandis to add: " + json.dumps(merchandise_items, indent=4))
                     merchant_merchandise = merchant.add_merchandise(merchant_obj, merchandise_items)
                     logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
 
@@ -217,7 +218,7 @@ async def authorize_callback(query_params, cookie):
                 else:
                     return JSONResponse(content={"message": "Unfortunately no merchandise data was found from your Square account. Please try again a different Square account or use our demo ButlerBot Square account."}, status_code=400)
             except Exception as e:
-                logging.info("Error: Test " + str(e))
+                logging.info("Error: " + str(e))
                 return JSONResponse(content={"error": "Internal Server Error: Unknown Error."}, status_code=500)
 
         elif response.is_error():

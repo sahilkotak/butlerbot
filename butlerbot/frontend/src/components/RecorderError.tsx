@@ -21,9 +21,7 @@ const RecorderError = ({ message }) => {
         Error
       </AlertTitle>
       <AlertDescription maxWidth="sm" color={"black"}>
-        {message}
-        {"   "}
-        {"Please give ButlerBot permissions to access your microphone."}
+        {message}. Please give ButlerBot permissions to access your microphone.
       </AlertDescription>
     </Alert>
   );

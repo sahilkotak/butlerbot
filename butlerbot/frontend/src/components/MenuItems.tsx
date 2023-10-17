@@ -62,9 +62,7 @@ const MenuItems = ({ onCurrencyUpdate }) => {
                   {"   "}
                   <Badge>{item.variation_name}</Badge>
                   {"   "}
-                  <Badge colorScheme="green">{`${item.price / 100} ${
-                    item.currency
-                  }`}</Badge>
+                  <Badge colorScheme="green">{`${item.price} ${item.currency}`}</Badge>
                 </StatNumber>
                 <StatHelpText>{item.item_description}</StatHelpText>
               </Stat>
