@@ -2,9 +2,10 @@
 import base64
 
 import json
+import os
 import time
 import logging
-from fetch_items import fetch_items
+from square_api.merchant import Merchant
 
 
 from fastapi import FastAPI, UploadFile, BackgroundTasks, Header
@@ -31,6 +32,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/authorise")
 async def authorise_client():
     return authorise()
@@ -56,7 +58,7 @@ async def authorise_callback(
     )
 
 @app.post("/checkout")
-async def checkout( data: dict, authorization: str = Header(None), locationId: str = Header(None)):
+async def checkout(data: dict, authorization: str = Header(None), locationId: str = Header(None)):
     
     checkout_params = {
         "access_token": authorization,
@@ -65,9 +67,14 @@ async def checkout( data: dict, authorization: str = Header(None), locationId: s
     }
     return await create_checkout(checkout_params)
 
-@app.post("/getMenu")
-async def checkout(authorization: str = Header(None)):
-    return fetch_items()
+@app.get("/get-menu")
+async def get_menu(ButlerbotMerchantId: str = Header(None)):
+    query_params = {
+        "merchant_id": ButlerbotMerchantId,
+    }
+    logging.info("qp: ", query_params)
+    merchant = Merchant()
+    return merchant.get_menu(query_params)
 
 @app.post("/inference")
 async def infer(audio: UploadFile, background_tasks: BackgroundTasks, conversation: str = Header(default=None)):
