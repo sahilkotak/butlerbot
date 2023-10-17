@@ -10,41 +10,27 @@ import { MenuItems, Chat, Cart } from "../components/";
 import { getCookie } from "../hooks";
 
 import { useVADRecorder } from "../hooks";
-import { BotState, UserAction } from "../enums";
-import { RecorderError } from "../components/";
+import { Box, Button, Center, Icon, Stack, Text } from "@chakra-ui/react";
+import { BiCheckboxSquare } from "react-icons/bi";
+// import { RecorderError } from "../components/";
 
 initializeIcons();
 registerIcons({ icons: DEFAULT_COMPONENT_ICONS });
 
 const HomePage = () => {
-  const [merchantCurrency, setMerchantCurrency] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
   const [cartItems, setCartItems] = useState([]);
-  const [userAction, setUserAction] = useState<UserAction>(null);
-  const [isBotThinking, setBotThinkingStatus] = useState<BotState>(
-    BotState.NotThinking
-  );
-
-  const merchantName =
-    getCookie("X-ButlerBot-Merchant-Name") || "ButlerBot powered Kiosk";
+  const [userAction, setUserAction] = useState(null);
 
   // handlers
-  const clearAppState = () => {
-    setChatMessages([]);
-    setCartItems([]);
-    setUserAction(null);
-    setBotThinkingStatus(BotState.NotThinking);
-  };
   const updateChatMessages = (response): void => {
     if (!(response && response.ai_response && response.user_prompt)) {
       console.log("silently dropping response. Reason - lack of data");
       return;
     }
 
-    const messagesToAdd = [];
-    if (response.user_prompt) {
-      // user response
-      messagesToAdd.push({
+    const messagesToAdd = [
+      {
         messageType: "chat",
         contentType: "text" as MessageContentType,
         senderId: "1",
@@ -53,86 +39,86 @@ const HomePage = () => {
         content: response.user_prompt,
         createdOn: new Date(),
         mine: false,
-      });
-    }
-    // butlerbot response
-    messagesToAdd.push({
-      messageType: "chat",
-      contentType: "text" as MessageContentType,
-      senderId: "2",
-      senderDisplayName: "ButlerBot",
-      messageId: Math.random().toString(),
-      content: response.ai_response,
-      createdOn: new Date(),
-      mine: true,
-    });
+      },
+      {
+        messageType: "chat",
+        contentType: "text" as MessageContentType,
+        senderId: "2",
+        senderDisplayName: "ButlerBot",
+        messageId: Math.random().toString(),
+        content: response.ai_response,
+        createdOn: new Date(),
+        mine: true,
+      },
+    ];
 
     setChatMessages([...chatMessages, ...messagesToAdd]);
   };
   const updateCartItems = (response): void => {
-    if (response && response.instructions && response.instructions.action) {
+    if (response.instructions && response.instructions.action) {
       const { item_name, price, quantity, action } = response.instructions;
 
-      if (action === UserAction.AddToCart) {
-        const itemToAdd = {
-          id: Math.random().toString(),
-          name: item_name,
-          quantity,
-          price,
-        };
+      const itemToAdd = {
+        id: Math.random().toString(),
+        name: item_name,
+        quantity,
+        price,
+      };
 
-        setCartItems([...cartItems, itemToAdd]);
-        setUserAction(UserAction.AddToCart);
-      } else if (action === UserAction.Checkout) {
-        setUserAction(UserAction.Checkout);
-      } else {
-        console.log("unknown action requested - ", action);
-      }
+      setCartItems([...cartItems, itemToAdd]);
+      setUserAction(action);
     } else {
       console.log("silently dropping the request - no cart action necessary");
     }
   };
 
-  const vad = useVADRecorder({
+  useVADRecorder({
     onSpeechEndCallback: (response) => {
       updateChatMessages(response);
       updateCartItems(response);
-      setBotThinkingStatus(BotState.NotThinking);
-    },
-    onSpeechEndPrecursor: () => {
-      setBotThinkingStatus(BotState.Thinking);
     },
   });
 
   return (
     <>
-      {vad.errored ? (
-        <RecorderError message={vad.errored.message} />
-      ) : vad.loading ? (
-        <p>Loading...</p>
-      ) : (
+      {getCookie("X-ButlerBot-Merchant-Device-Id") ? (
         <>
-          <Heading>{merchantName}</Heading>
+          <Heading>{getCookie("X-ButlerBot-Merchant-Name")}</Heading>
           <Container>
-            <MenuItems onCurrencyUpdate={setMerchantCurrency} />
-            <Chat
-              messages={chatMessages}
-              botStatus={
-                vad.userSpeaking
-                  ? BotState.UserSpeaking
-                  : isBotThinking === BotState.Thinking
-                  ? isBotThinking
-                  : BotState.Listening
-              }
-            />
-            <Cart
-              items={cartItems}
-              action={userAction}
-              currency={merchantCurrency}
-              onCheckoutCompletion={clearAppState}
-            />
+            <MenuItems />
+            <Chat messages={chatMessages} />
+            <Cart items={cartItems} action={userAction} />
           </Container>
         </>
+      ) : (
+        <Center minHeight="100vh">
+          <Box
+            p={10}
+            borderWidth={1}
+            borderRadius="lg"
+            shadow="md"
+            bg="white"
+            width="500px"
+          >
+            <Stack spacing={4} align="center">
+              <Heading>Welcome to ButlerBot!</Heading>
+              <Text color="black" fontSize={"md"}>
+                The account that you are logged in with has not attached Device
+                Id
+              </Text>
+              <Text color="black" fontSize={"md"}>
+                Don't have a <Text as="b">Square</Text> account? Don't worry
+                we've got you covered 😉.
+              </Text>
+              <Text color="black" fontSize={"md"}>
+                Play with our <Text as="b">ButlerBot</Text> Demo account.
+              </Text>
+              <Button colorScheme="teal" onClick={() => {}}>
+                Sign in with Demo Account
+              </Button>
+            </Stack>
+          </Box>
+        </Center>
       )}
     </>
   );

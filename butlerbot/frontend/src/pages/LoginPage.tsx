@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { BiCheckboxSquare, BiBot } from "react-icons/bi";
 
-const LoginPage = ({ onSessionTokenUpdate, setIsDemoAccount }) => {
+const LoginPage = ({ onSessionTokenUpdate }) => {
   const toast = useToast();
 
   // handlers
@@ -42,7 +42,6 @@ const LoginPage = ({ onSessionTokenUpdate, setIsDemoAccount }) => {
 
       return;
     }
-    setIsDemoAccount(true);
     onSessionTokenUpdate(demoAccountToken);
   };
 
