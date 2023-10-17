@@ -1,26 +1,82 @@
-import { Spinner, Text } from "@chakra-ui/react";
-import { ChatIcon, PhoneIcon } from "@chakra-ui/icons";
+import { useEffect, useState } from "react";
 import {
-  FluentThemeProvider,
   DEFAULT_COMPONENT_ICONS,
-  MessageThread,
-  ChatMessage,
   MessageContentType,
 } from "@azure/communication-react";
 import { initializeIcons, registerIcons } from "@fluentui/react";
 import styled from "styled-components";
+
+import { MenuItems, Chat, Cart } from "../components/";
+import { getCookie } from "../hooks";
+
+import { useVADRecorder } from "../hooks";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+// import { RecorderError } from "../components/";
 
 initializeIcons();
 registerIcons({ icons: DEFAULT_COMPONENT_ICONS });
 
-import { useVADRecorder } from "../hooks";
-import { RecorderError } from "../components/";
-import ModalContainer from "../components/ModalContainer";
-
 const HomePage = () => {
-  const vad = useVADRecorder();
+  const [chatMessages, setChatMessages] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
+  const [userAction, setUserAction] = useState(null);
+
+  // handlers
+  const updateChatMessages = (response): void => {
+    if (!(response && response.ai_response && response.user_prompt)) {
+      console.log("silently dropping response. Reason - lack of data");
+      return;
+    }
+
+    const messagesToAdd = [
+      {
+        messageType: "chat",
+        contentType: "text" as MessageContentType,
+        senderId: "1",
+        senderDisplayName: "You",
+        messageId: Math.random().toString(),
+        content: response.user_prompt,
+        createdOn: new Date(),
+        mine: false,
+      },
+      {
+        messageType: "chat",
+        contentType: "text" as MessageContentType,
+        senderId: "2",
+        senderDisplayName: "ButlerBot",
+        messageId: Math.random().toString(),
+        content: response.ai_response,
+        createdOn: new Date(),
+        mine: true,
+      },
+    ];
+
+    setChatMessages([...chatMessages, ...messagesToAdd]);
+  };
+  const updateCartItems = (response): void => {
+    if (response.instructions && response.instructions.action) {
+      const { item_name, price, quantity, action } = response.instructions;
+
+      const itemToAdd = {
+        id: Math.random().toString(),
+        name: item_name,
+        quantity,
+        price,
+      };
+
+      setCartItems([...cartItems, itemToAdd]);
+      setUserAction(action);
+    } else {
+      console.log("silently dropping the request - no cart action necessary");
+    }
+  };
+
+  useVADRecorder({
+    onSpeechEndCallback: (response) => {
+      updateChatMessages(response);
+      updateCartItems(response);
+    },
+  });
 
   const [menus, setMenus] = useState([]);
   // const [chatMessages, setChatMessages] = useState([]);
@@ -53,10 +109,6 @@ const HomePage = () => {
       catalog_object_id: "QQZ6ZOA3IUB2HFAHW7W7GVAP",
       quantity: "1",
     },
-  ];
-  const cart = [
-    { id: 1, name: "Pasta", quantity: 1 },
-    { id: 2, name: "Steak", quantity: 1 },
   ];
 
   const getCookieValue = (cookieName) => {
@@ -134,73 +186,11 @@ const HomePage = () => {
   return (
     <>
       <>
-        <Heading>{getCookieValue("X-ButlerBot-Merchant-Name")}</Heading>
+        <Heading>{getCookie("X-ButlerBot-Merchant-Name")}</Heading>
         <Container>
-          <ModalContainer />
-          <Menu>
-            <h1>Our Menu</h1>
-            <MenuContainer>
-              {menus.length > 0 ? (
-                menus.map((item, index) => (
-                  <React.Fragment key={index}>
-                    <MenuItem>
-                      <p>{item.item_name}</p>
-                      <p>
-                        {item.price} {item.currency}
-                      </p>
-                    </MenuItem>
-                    <Variation>({item.variation_name})</Variation>
-                    <ItemDescription>{item.item_description}</ItemDescription>
-                  </React.Fragment>
-                ))
-              ) : (
-                <MenuItem>No Menus Found</MenuItem>
-              )}
-            </MenuContainer>
-          </Menu>
-          <ChatContainer>
-            <FluentThemeProvider>
-              <MessageThread userId={"1"} messages={GetHistoryChatMessages()} />
-            </FluentThemeProvider>
-            {vad.loading ? (
-              <Text>
-                <Spinner /> VAD loading...
-              </Text>
-            ) : vad.errored ? (
-              <RecorderError message={vad.errored.message} />
-            ) : vad.userSpeaking ? (
-              <Text>
-                <ChatIcon />
-                User speaking is speaking...
-              </Text>
-            ) : (
-              <Text>
-                <PhoneIcon />
-                Bot is actively listening...
-              </Text>
-            )}
-          </ChatContainer>
-          <CartContainer>
-            <CartItemContainer>
-              {cart.map((item) => (
-                <CartItem key={item.id}>
-                  <ItemName>{item.name}</ItemName>
-                  <div>
-                    <ItemQuantity>{item.quantity}</ItemQuantity>
-                  </div>
-                </CartItem>
-              ))}
-              <CartActions>
-                <div>
-                  Total: $
-                  {cart.reduce((total, item) => total + item.quantity * 10, 0)}
-                </div>
-              </CartActions>
-            </CartItemContainer>
-            <CheckoutButton onClick={handleCheckOut}>
-              Proceed to Payment
-            </CheckoutButton>
-          </CartContainer>
+          <MenuItems />
+          <Chat messages={chatMessages} />
+          <Cart items={cartItems} action={userAction} />
         </Container>
       </>
     </>
@@ -228,149 +218,3 @@ const Container = styled.div`
   padding-bottom: 3rem;
   gap: 2rem;
 `;
-
-const Menu = styled.div`
-  display: flex;
-  flex-direction: column;
-  h1 {
-    color: #000;
-    font-weight: 700;
-  }
-`;
-
-const MenuContainer = styled.div`
-  width: 20vw;
-  border: 1px solid #ccc;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.1);
-`;
-
-const MenuItem = styled.div`
-  display: flex;
-  gap: 10px;
-  justify-content: space-between;
-  align-items: start;
-  font-size: 18px;
-  font-weight: bold;
-  p {
-    color: #000;
-  }
-`;
-
-const Variation = styled.div`
-  font-size: 16px;
-  color: #999090;
-  font-weight: 700;
-  margin-bottom: 10px;
-`;
-const ItemDescription = styled.div`
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 10px;
-`;
-const ChatContainer = styled.div`
-  flex: 1;
-  padding: 2rem;
-  padding-bottom: 3rem;
-  border: 1px solid #ccc;
-  background-color: #f9f9f9;
-  max-height: 90vh;
-  box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
-  p {
-    color: black;
-    font-weight: 700;
-    font-size: 20px;
-    float: left;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-  }
-`;
-
-const CartContainer = styled.div`
-  min-width: 20vw;
-  border: 1px solid #ccc;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background-color: #f5f5f5;
-  border-radius: 8px;
-  box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.1);
-  max-height: 80vh;
-`;
-
-const CartItem = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-`;
-
-const ItemName = styled.span`
-  font-size: 18px;
-  font-weight: bold;
-`;
-
-const ItemQuantity = styled.span`
-  font-size: 16px;
-  color: #555;
-  font-weight: bold;
-  margin-right: 10px;
-`;
-const CartItemContainer = styled.span`
-  font-size: 14px;
-  color: #555;
-  margin-right: 10px;
-`;
-
-const CartActions = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
-  font-size: 16px;
-  color: #555;
-  font-weight: bold;
-  border-top: 1px solid #ccc;
-  margin-top: 2rem;
-`;
-const CheckoutButton = styled.div`
-  background: #000;
-  color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  padding: 10px 40px;
-  border-radius: 8px;
-  margin-top: 20px;
-  font-size: 20px;
-`;
-
-// {
-//   vad.loading ? (
-//     <Center>
-//       <Text color={"black"}>VAD loading...</Text>
-//     </Center>
-//   ) : vad.errored ? (
-//     <Center>
-//       <RecorderError message={vad.errored.message} />
-//     </Center>
-//   ) : vad.userSpeaking ? (
-//     <Center>
-//       <Text fontSize="md" color={"black"}>
-//         User speaking is speaking.
-//       </Text>
-//     </Center>
-//   ) : (
-//     <Center>
-//       <Text fontSize="md" color={"black"}>
-//         VAD is actively listening.
-//       </Text>
-//     </Center>
-//   );
-// }

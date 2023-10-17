@@ -12,7 +12,7 @@ export const onSpeechStart = () => {
 export const onSpeechEnd = async (audio) => {
   console.log("speech ended");
   try {
-    await processAudio(audio);
+    return await processAudio(audio);
   } catch (e) {
     console.log("error encountered: ", e.message);
   }
@@ -32,24 +32,29 @@ const stopSourceIfNeeded = () => {
 const processAudio = async (audio) => {
   const blob = createAudioBlob(audio);
   await validate(blob);
-  sendData(blob);
+  return await sendData(blob);
 };
 const createAudioBlob = (audio) => {
   const wavBuffer = utils.encodeWAV(audio);
   return new Blob([wavBuffer], { type: "audio/wav" });
 };
-const sendData = (blob) => {
+const sendData = async (blob) => {
   console.log("sending data");
-  fetch("inference", {
-    method: "POST",
-    body: createBody(blob),
-    headers: {
-      conversation: base64Encode(JSON.stringify(conversationThusFar)),
-    },
-  })
-    .then(handleResponse)
-    .then(handleSuccess)
-    .catch(handleError);
+
+  try {
+    const inferenceResponse = await fetch("inference", {
+      method: "POST",
+      body: createBody(blob),
+      headers: {
+        conversation: base64Encode(JSON.stringify(conversationThusFar)),
+      },
+    });
+
+    const response = await handleResponse(inferenceResponse);
+    return await handleSuccess(response);
+  } catch (e) {
+    handleError(e);
+  }
 };
 function base64Encode(str: string) {
   const encoder = new TextEncoder();
@@ -86,7 +91,7 @@ const handleResponse = async (res) => {
   console.log(`AI Response: ${jsonResponse.ai_response}`);
   console.log(`Instructions: `, jsonResponse.instructions);
 
-  return audioBlob;
+  return { audioBlob, response: jsonResponse };
 };
 async function base64ToBlob(base64: string, type: string) {
   const response = await fetch(`data:${type};base64,${base64}`);
@@ -98,17 +103,21 @@ const createBody = (data) => {
   formData.append("audio", data, "audio.wav");
   return formData;
 };
-const handleSuccess = async (blob) => {
+const handleSuccess = async ({ audioBlob, response }) => {
   console.log("success response handling");
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
   stopSourceIfNeeded();
 
   source = audioContext.createBufferSource();
-  source.buffer = await audioContext.decodeAudioData(await blob.arrayBuffer());
+  source.buffer = await audioContext.decodeAudioData(
+    await audioBlob.arrayBuffer()
+  );
   source.connect(audioContext.destination);
   source.start(0);
   sourceIsStarted = true;
+
+  return response;
 };
 const handleError = (error) => {
   console.log(`error response handling: ${error.message}`);

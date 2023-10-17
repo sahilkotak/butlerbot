@@ -1,2 +1,4 @@
 export { default as RecorderError } from "./RecorderError";
-export { default as ModalContainer } from "./ModalContainer";
+export { default as MenuItems } from "./MenuItems";
+export { default as Chat } from "./Chat";
+export { default as Cart } from "./Cart";
