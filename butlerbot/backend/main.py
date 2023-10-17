@@ -74,7 +74,8 @@ async def get_menu(ButlerbotMerchantId: str = Header(None)):
     }
     logging.info("qp: ", query_params)
     merchant = Merchant()
-    return merchant.get_menu(query_params)
+    response = merchant.get_menu(query_params)
+    return JSONResponse(content=response, headers={ "Content-Type": "application/json" })
 
 @app.post("/inference")
 async def infer(audio: UploadFile, background_tasks: BackgroundTasks, conversation: str = Header(default=None)):

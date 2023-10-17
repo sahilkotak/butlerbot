@@ -1,7 +1,14 @@
 import { useEffect } from "react";
 import styled from "styled-components";
 
-const Cart = ({ items, action }) => {
+import { UserAction } from "../enums";
+
+const Cart = ({ items, action, currency }) => {
+  const cartTotal = items.reduce(
+    (total, item) => total + item.quantity * (item.price / 100),
+    0
+  );
+
   // handlers
   // const handleCheckOut = async () => {
   //   // Get session token from cookie
@@ -44,9 +51,9 @@ const Cart = ({ items, action }) => {
   useEffect(() => {
     if (!action) return;
 
-    if (action === "add_to_cart") {
+    if (action === UserAction.AddToCart) {
       console.log("action - add_to_cart - requested");
-    } else if (action === "checkout") {
+    } else if (action === UserAction.Checkout) {
       console.log("action - checkout - requested");
     } else {
       console.log("unknown action requested - ", action);
@@ -61,20 +68,20 @@ const Cart = ({ items, action }) => {
             <ItemName>{item.name}</ItemName>
             <div>
               <ItemQuantity>{item.quantity}</ItemQuantity>
+              {" x "}
+              <ItemQuantity>
+                {item.price / 100} {currency}
+              </ItemQuantity>
             </div>
           </CartItem>
         ))}
         <CartActions>
           <div>
-            Total: $
-            {items.reduce((total, item) => total + item.quantity * 10, 0)}
+            Total:
+            {cartTotal} {currency}
           </div>
         </CartActions>
       </CartItemContainer>
-
-      {/* <CheckoutButton onClick={handleCheckOut}>
-        Proceed to Payment
-      </CheckoutButton> */}
     </CartContainer>
   );
 };

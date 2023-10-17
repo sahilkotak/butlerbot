@@ -1,12 +1,14 @@
 import { FluentThemeProvider, MessageThread } from "@azure/communication-react";
 import styled from "styled-components";
 
-const Chat = ({ messages }) => {
+const Chat = ({ messages, botStatus }) => {
   return (
     <ChatContainer>
       <FluentThemeProvider>
         <MessageThread userId={"1"} messages={messages} />
       </FluentThemeProvider>
+
+      <p>{botStatus}</p>
     </ChatContainer>
   );
 };

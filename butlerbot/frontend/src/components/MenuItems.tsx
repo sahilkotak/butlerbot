@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import { getCookie } from "../hooks/useCookie";
 
-const MenuItems = () => {
+const MenuItems = ({ onCurrencyUpdate }) => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
@@ -20,10 +20,11 @@ const MenuItems = () => {
         });
 
         if (response.status === 200) {
-          setItems(response.data);
+          setItems(response.data.items);
+          onCurrencyUpdate(response.data.currency);
         } else {
           setItems([]);
-          throw Error("something went wrong while fetching the menu items");
+          throw Error("something went wrong while fetching menu items");
         }
       } catch (e) {
         console.error("failed fetching menu items", e.message);
@@ -44,7 +45,7 @@ const MenuItems = () => {
               <MenuItem>
                 <p>{item.item_name}</p>
                 <p>
-                  {item.price} {item.currency}
+                  {item.price / 100} {item.currency}
                 </p>
               </MenuItem>
               <Variation>({item.variation_name})</Variation>

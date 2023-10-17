@@ -7,7 +7,10 @@ import {
   onSpeechMisfire,
 } from "../utils/SpeechManager";
 
-export const useVADRecorder = ({ onSpeechEndCallback }) => {
+export const useVADRecorder = ({
+  onSpeechEndCallback,
+  onSpeechEndPrecursor,
+}) => {
   const micVADInstance = useMicVAD({
     startOnLoad: true, // VAD start listening to mic input when it finishes loading
     preSpeechPadFrames: 5,
@@ -15,6 +18,7 @@ export const useVADRecorder = ({ onSpeechEndCallback }) => {
     negativeSpeechThreshold: 0.75,
     onSpeechStart,
     onSpeechEnd: async (audio) => {
+      onSpeechEndPrecursor();
       const response = await onSpeechEnd(audio);
       onSpeechEndCallback(response);
     },

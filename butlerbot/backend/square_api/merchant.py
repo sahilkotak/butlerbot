@@ -58,7 +58,7 @@ class Merchant:
                 }
                 items_details.append(item_details)
 
-            return items_details
+            return { "items": items_details, "currency": response['Items'][0]['currency'] }
                 
         except ClientError as e:
             logging.error("Error retrieving merchant data: " + str(e))
