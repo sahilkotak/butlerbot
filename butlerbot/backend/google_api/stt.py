@@ -6,7 +6,7 @@ import uuid
 import json
 
 import ffmpeg
-from google.cloud import speech
+from google.cloud import speech_v1p1beta1 as speech
 from pydub.utils import mediainfo
 
 from fetch_items import fetch_items
@@ -50,7 +50,7 @@ async def transcribe(audio, merchant_id):
     items_dict = json.loads(items_json)  # Convert JSON to dictionary
     menu_items = [item['item_name'] for item in items_dict['items']]  # Extract item names
 
-    phrase_set = [speech.Phrase(phrase=item, boost=20.0) for item in menu_items]
+    speech_context = speech.SpeechContext(phrases=menu_items)
 
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
@@ -59,9 +59,7 @@ async def transcribe(audio, merchant_id):
         model='phone_call',
         use_enhanced=True,
         enable_automatic_punctuation=True,
-        speech_adaptation=speech.SpeechAdaptation(
-            phrases=[speech.PhraseSet(phrases=phrase_set)]
-        ),
+        speech_contexts=[speech_context],
     )
 
     # Log the request details

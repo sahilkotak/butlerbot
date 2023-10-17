@@ -54,19 +54,19 @@ Important Notes: \
 
     # Define the functions that the model can call
     functions = [
-        {
-        "name": "fetch_items",
-        "description": "Fetch menu items from the menu card.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "include_description": {
-                    "type": "boolean",
-                    "description": "If the user asks for item description then send True."
-                    }
-                },
-            },
-        },
+        # {
+        # "name": "fetch_items",
+        # "description": "Fetch menu items from the menu card.",
+        # "parameters": {
+        #     "type": "object",
+        #     "properties": {
+        #         "include_description": {
+        #             "type": "boolean",
+        #             "description": "If the user asks for item description then send True."
+        #             }
+        #         },
+        #     },
+        # },
         {
             "name": "add_to_cart",
             "description": "Add an item to the cart",
