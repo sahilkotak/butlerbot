@@ -1,4 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import {
+  Box,
+  Center,
+  Divider,
+  Heading,
+  Badge,
+  Text,
+  Stat,
+  StatNumber,
+  StatHelpText,
+} from "@chakra-ui/react";
 import axios from "axios";
 import styled from "styled-components";
 
@@ -37,23 +48,33 @@ const MenuItems = ({ onCurrencyUpdate }) => {
 
   return (
     <Menu>
-      <h1>Our Menu</h1>
+      <Heading as="h3" size="lg" marginBottom={"5px"}>
+        Our Menu
+      </Heading>
+
       <MenuContainer>
         {items.length > 0 ? (
           items.map((item, index) => (
-            <React.Fragment key={index}>
-              <MenuItem>
-                <p>{item.item_name}</p>
-                <p>
-                  {item.price / 100} {item.currency}
-                </p>
-              </MenuItem>
-              <Variation>({item.variation_name})</Variation>
-              <ItemDescription>{item.item_description}</ItemDescription>
-            </React.Fragment>
+            <Box margin={"3px"} key={index}>
+              <Stat>
+                <StatNumber>
+                  {item.item_name}
+                  {"   "}
+                  <Badge>{item.variation_name}</Badge>
+                  {"   "}
+                  <Badge colorScheme="green">{`${item.price / 100} ${
+                    item.currency
+                  }`}</Badge>
+                </StatNumber>
+                <StatHelpText>{item.item_description}</StatHelpText>
+              </Stat>
+              <Divider orientation="horizontal" />
+            </Box>
           ))
         ) : (
-          <MenuItem>No Items Found</MenuItem>
+          <Center h="100px" color="white">
+            <Text color={"black"}>Looks empty</Text>
+          </Center>
         )}
       </MenuContainer>
     </Menu>
@@ -73,6 +94,7 @@ const Menu = styled.div`
 
 const MenuContainer = styled.div`
   width: 20vw;
+  min-width: 300px;
   border: 1px solid #ccc;
   padding: 20px;
   background-color: #fff;
@@ -80,26 +102,26 @@ const MenuContainer = styled.div`
   box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.1);
 `;
 
-const MenuItem = styled.div`
-  display: flex;
-  gap: 10px;
-  justify-content: space-between;
-  align-items: start;
-  font-size: 18px;
-  font-weight: bold;
-  p {
-    color: #000;
-  }
-`;
+// const MenuItem = styled.div`
+//   display: flex;
+//   gap: 10px;
+//   justify-content: space-between;
+//   align-items: start;
+//   font-size: 18px;
+//   font-weight: bold;
+//   p {
+//     color: #000;
+//   }
+// `;
 
-const Variation = styled.div`
-  font-size: 16px;
-  color: #999090;
-  font-weight: 700;
-  margin-bottom: 10px;
-`;
-const ItemDescription = styled.div`
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 10px;
-`;
+// const Variation = styled.div`
+//   font-size: 16px;
+//   color: #999090;
+//   font-weight: 700;
+//   margin-bottom: 10px;
+// `;
+// const ItemDescription = styled.div`
+//   font-size: 14px;
+//   color: #555;
+//   margin-bottom: 10px;
+// `;

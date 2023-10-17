@@ -1,5 +1,15 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import {
+  Box,
+  Center,
+  Divider,
+  Heading,
+  Badge,
+  Text,
+  Stat,
+  StatNumber,
+} from "@chakra-ui/react";
 import styled from "styled-components";
 
 import { getCookie } from "../hooks/useCookie";
@@ -55,70 +65,91 @@ const Cart = ({ items, action, currency }) => {
   }, [action]);
 
   return (
-    <CartContainer>
-      <ModalContainer showModal={showModal} setShowModal={setShowModal} />
-      <CartItemContainer>
-        {items.map((item) => (
-          <CartItem key={item.id}>
-            <ItemName>{item.name}</ItemName>
+    <CartWrapper>
+      <Heading as="h3" size="lg" marginBottom={"5px"}>
+        Cart
+      </Heading>
+
+      <CartContainer>
+        <ModalContainer showModal={showModal} setShowModal={setShowModal} />
+        {items.length > 0 ? (
+          items.map((item) => (
+            <Box key={item.id}>
+              <Stat>
+                <StatNumber>
+                  {item.name}
+                  {"   "}
+                  <Badge>{item.quantity}</Badge>
+                  {"   "}
+                  <Badge>{`${item.price / 100} ${item.currency}`}</Badge>
+                </StatNumber>
+              </Stat>
+              <Divider orientation="horizontal" />
+            </Box>
+          ))
+        ) : (
+          <Center h="100px" color="white">
+            <Text color={"black"}>Looks empty</Text>
+          </Center>
+        )}
+
+        {items.length > 0 && (
+          <CartActions>
             <div>
-              <ItemQuantity>{item.quantity}</ItemQuantity>
-              {" x "}
-              <ItemQuantity>
-                {item.price / 100} {currency}
-              </ItemQuantity>
+              Total:
+              {cartTotal} {currency}
             </div>
-          </CartItem>
-        ))}
-        <CartActions>
-          <div>
-            Total:
-            {cartTotal} {currency}
-          </div>
-        </CartActions>
-      </CartItemContainer>
-    </CartContainer>
+          </CartActions>
+        )}
+      </CartContainer>
+    </CartWrapper>
   );
 };
 
 export default Cart;
 
-const CartContainer = styled.div`
-  min-width: 20vw;
-  border: 1px solid #ccc;
-  padding: 20px;
+const CartWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  background-color: #f5f5f5;
-  border-radius: 8px;
+  h1 {
+    color: #000;
+    font-weight: 700;
+  }
+`;
+
+const CartContainer = styled.div`
+  width: 20vw;
+  min-width: 300px;
+  border: 1px solid #ccc;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
   box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.1);
-  max-height: 80vh;
 `;
 
-const CartItem = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-`;
+// const CartItem = styled.div`
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   margin-bottom: 10px;
+// `;
 
-const ItemName = styled.span`
-  font-size: 18px;
-  font-weight: bold;
-`;
+// const ItemName = styled.span`
+//   font-size: 18px;
+//   font-weight: bold;
+// `;
 
-const ItemQuantity = styled.span`
-  font-size: 16px;
-  color: #555;
-  font-weight: bold;
-  margin-right: 10px;
-`;
-const CartItemContainer = styled.span`
-  font-size: 14px;
-  color: #555;
-  margin-right: 10px;
-`;
+// const ItemQuantity = styled.span`
+//   font-size: 16px;
+//   color: #555;
+//   font-weight: bold;
+//   margin-right: 10px;
+// `;
+// const CartItemContainer = styled.span`
+//   font-size: 14px;
+//   color: #555;
+//   margin-right: 10px;
+// `;
 
 const CartActions = styled.div`
   display: flex;

@@ -17,10 +17,14 @@ const RecorderError = ({ message }) => {
       height="200px"
     >
       <AlertIcon boxSize="40px" mr={0} />
-      <AlertTitle mt={4} mb={1} fontSize="lg">
+      <AlertTitle mt={4} mb={1} fontSize="lg" color={"black"}>
         Error
       </AlertTitle>
-      <AlertDescription maxWidth="sm">{message}</AlertDescription>
+      <AlertDescription maxWidth="sm" color={"black"}>
+        {message}
+        {"   "}
+        {"Please give ButlerBot permissions to access your microphone."}
+      </AlertDescription>
     </Alert>
   );
 };

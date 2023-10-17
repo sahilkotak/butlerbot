@@ -3,6 +3,7 @@ import {
   DEFAULT_COMPONENT_ICONS,
   MessageContentType,
 } from "@azure/communication-react";
+import { Center, Heading, Highlight, Text } from "@chakra-ui/react";
 import { initializeIcons, registerIcons } from "@fluentui/react";
 import styled from "styled-components";
 
@@ -107,12 +108,26 @@ const HomePage = () => {
   return (
     <>
       {vad.errored ? (
-        <RecorderError message={vad.errored.message} />
+        <Center h="100vh" color="white">
+          <RecorderError message={vad.errored.message} />
+        </Center>
       ) : vad.loading ? (
-        <p>Loading...</p>
+        <Center h="100vh" color="white">
+          <Text color={"black"}>Initialising ButlerBot. Won't be long...</Text>
+        </Center>
       ) : (
         <>
-          <Heading>{merchantName}</Heading>
+          <Center h="100px" color="white">
+            <Heading as="h2" size="lg">
+              <Highlight
+                query={merchantName}
+                styles={{ px: "2", py: "1", rounded: "full", bg: "red.100" }}
+              >
+                {merchantName}
+              </Highlight>
+            </Heading>
+          </Center>
+
           <Container>
             <MenuItems onCurrencyUpdate={setMerchantCurrency} />
             <Chat
@@ -139,17 +154,6 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
-const Heading = styled.h1`
-  font-size: 36px;
-  font-weight: bold;
-  color: #1d1d24;
-  margin: auto !important;
-  padding-top: 2rem;
-  text-align: center;
-  text-transform: uppercase;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-`;
 
 const Container = styled.div`
   display: flex;
