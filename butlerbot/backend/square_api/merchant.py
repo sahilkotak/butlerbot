@@ -125,7 +125,10 @@ class Merchant:
             for merch_variant in merch_item["item_data"]["variations"]:
                 item = dict(merchant_id = merchant["id"])
                 item["item_name"] = merch_item["item_data"]["name"]
-                item["item_description"] = merch_item["item_data"]["description"]
+                if hasattr(merch_item["item_data"], "description"):
+                    item["item_description"] = merch_item["item_data"]["description"]
+                elif hasattr(merch_item["item_data"], "description_plaintext"):
+                    item["item_description"] = merch_item["item_data"]["description_plaintext"]
                 
                 item["merchandise_id"] = merch_variant["id"]
                 item["variation_name"] = merch_variant["item_variation_data"]["name"]
