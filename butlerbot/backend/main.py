@@ -33,7 +33,6 @@ app.add_middleware(
 )
 
 
-
 @app.get("/authorise")
 async def authorise_client():
     return authorise()
@@ -59,7 +58,7 @@ async def authorise_callback(
     )
 
 @app.post("/checkout")
-async def checkout( data: dict, authorization: str = Header(None), locationId: str = Header(None)):
+async def checkout(data: dict, authorization: str = Header(None), locationId: str = Header(None)):
     
     checkout_params = {
         "access_token": authorization,
@@ -69,10 +68,11 @@ async def checkout( data: dict, authorization: str = Header(None), locationId: s
     return await create_checkout(checkout_params)
 
 @app.get("/get-menu")
-async def get_menu(authorization: str = Header(None)):
+async def get_menu(ButlerbotMerchantId: str = Header(None)):
     query_params = {
-        "merchant_id": authorization,
+        "merchant_id": ButlerbotMerchantId,
     }
+    logging.info("qp: ", query_params)
     merchant = Merchant()
     return merchant.get_menu(query_params)
 
