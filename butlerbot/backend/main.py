@@ -2,10 +2,10 @@
 import base64
 
 import json
+import os
 import time
 import logging
 from square_api.merchant import Merchant
-from fetch_items import fetch_items
 
 
 from fastapi import FastAPI, UploadFile, BackgroundTasks, Header
@@ -31,6 +31,8 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
+
+
 
 @app.get("/authorise")
 async def authorise_client():
