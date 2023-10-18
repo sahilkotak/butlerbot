@@ -61,13 +61,13 @@ async def authorise_callback(
 
 @app.post("/checkout")
 async def checkout( data: dict, authorization: str = Header(None), deviceId: str = Header(None)):
-    
+    logging.info("Checkout data", data)
     checkout_params = {
         "access_token": authorization,
         "device_id": deviceId,
         "data": data,
     }
-    logging.info("Checkout", checkout_params)
+   
     return await create_checkout(checkout_params)
 
 @app.get("/get-menu")

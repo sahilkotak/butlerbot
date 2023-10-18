@@ -18,26 +18,28 @@ import { getCookie } from "../hooks/useCookie";
 import ModalContainer from "./ModalContainer";
 import { UserAction } from "../enums";
 
-const Cart = ({ items, action, currency }) => {
+const Cart = ({ items, action, currency, onCheckoutCompletion }) => {
   const cartTotal = items.reduce(
     (total, item) => total + item.quantity * item.price,
     0
   );
   const [showModal, setShowModal] = useState({});
   const access_token = getCookie("X-ButlerBot-Active-Session-Token");
+  const deviceId = getCookie("X-ButlerBot-Merchant-Device-Id");
 
   const handleCheckOut = async () => {
     try {
       const response = await axios.post(
         `/checkout`,
         {
-          checkoutData: items,
+          amount: cartTotal,
+          currency: currency,
         },
         {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${access_token}`,
-            deviceId: "9fa747a2-25ff-48ee-b078-04381f7c828f",
+            deviceId: deviceId,
           },
         }
       );
@@ -73,7 +75,11 @@ const Cart = ({ items, action, currency }) => {
       </Heading>
 
       <CartContainer>
-        <ModalContainer showModal={showModal} setShowModal={setShowModal} />
+        <ModalContainer
+          showModal={showModal}
+          setShowModal={setShowModal}
+          onCheckoutCompletion={onCheckoutCompletion}
+        />
 
         {items.length > 0 ? (
           items.map((item) => (

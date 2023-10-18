@@ -6,22 +6,24 @@ import {
   Text,
   ModalHeader,
   Modal,
+  Highlight,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { BiLogoCreativeCommons } from "react-icons/bi";
 
-const ModalContainer = ({ showModal, setShowModal }) => {
+const ModalContainer = ({ showModal, setShowModal, onCheckoutCompletion }) => {
   const [showContent, setShowContent] = useState(false);
+
   useEffect(() => {
     let timeout1;
     let timeout2;
     if (showModal.display) {
       timeout1 = setTimeout(() => {
         setShowContent(true);
-      }, 3000);
+      }, 5000);
       timeout2 = setTimeout(() => {
         setShowModal(false);
-      }, 6000);
+        onCheckoutCompletion();
+      }, 10000);
     }
     // Cleanup timeouts when isOpen changes to false
     return () => {
@@ -40,17 +42,21 @@ const ModalContainer = ({ showModal, setShowModal }) => {
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          {showModal.content
-            ? " Display your card to complete your transaction"
-            : "Something went Wrong"}
+          {showModal.content ? "Please Pay" : "Oops, something went wrong"}
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Text fontWeight="bold" mb="1rem" color="#000">
-            {showContent &&
-              "Your Your transaction was successful, please proceed to the counter"}
-          </Text>
-          <BiLogoCreativeCommons count={2} />
+          {showContent && (
+            <Text fontWeight="400" fontSize={"sm"} color="black" as="em">
+              <Highlight
+                query={["successful"]}
+                styles={{ px: "2", py: "1", rounded: "full", bg: "green.100" }}
+              >
+                Your transaction was successful, please proceed to the counter
+                to collect your order.
+              </Highlight>
+            </Text>
+          )}
         </ModalBody>
       </ModalContent>
     </Modal>

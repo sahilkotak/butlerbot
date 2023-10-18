@@ -24,6 +24,10 @@ const LoginPage = () => {
       process.env.X_ButlerBot_Merchant_Name
     );
     setCookie("X-ButlerBot-Merchant-Loc", process.env.X_ButlerBot_Merchant_Loc);
+    setCookie(
+      "X-ButlerBot-Merchant-Device-Id",
+      process.env.X_ButlerBot_Device_Id
+    );
 
     window.location.reload();
   };
