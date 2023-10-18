@@ -12,6 +12,7 @@ def fetch_items(merchant_id=None):
 
     dynamodb = boto3.resource(
         "dynamodb",
+        region_name=Config.DB_REGION_NAME,
     )
     table = dynamodb.Table('merchandise')
 

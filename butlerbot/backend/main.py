@@ -22,9 +22,6 @@ from context import get_merchant_id
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
-origins = [
-    "http://localhost:5173"
-]
 
 app.add_middleware(
     CORSMiddleware,
@@ -61,7 +58,6 @@ async def authorise_callback(
 
 @app.post("/checkout")
 async def checkout( data: dict, authorization: str = Header(None), deviceId: str = Header(None)):
-    logging.info("Checkout data", data)
     checkout_params = {
         "access_token": authorization,
         "device_id": deviceId,
@@ -75,14 +71,12 @@ async def get_menu(merchant_id: str = Depends(get_merchant_id)):
     query_params = {
         "merchant_id": merchant_id,
     }
-    logging.info("qp: ", query_params)
     merchant = Merchant()
     response = merchant.get_menu(query_params)
     return JSONResponse(content=response, headers={ "Content-Type": "application/json" })
 
 @app.post("/inference")
 async def infer(audio: UploadFile, background_tasks: BackgroundTasks, conversation: str = Header(default=None), merchant_id: str = Depends(get_merchant_id)):
-    logging.debug("received request")
     start_time = time.time()
     user_prompt_text, error_occurred = await transcribe(audio, merchant_id)
     ai_response_text, machine_instructions = (user_prompt_text, None) if error_occurred else await get_completion(user_prompt_text, conversation, merchant_id)

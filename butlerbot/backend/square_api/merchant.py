@@ -10,9 +10,7 @@ logging.basicConfig(level=logging.INFO)
 
 class Config:
     DB_REGION_NAME = os.getenv("DB_REGION_NAME", "ap-southeast-2")
-    DB_ACCESS_KEY_ID = os.getenv("DB_ACCESS_KEY_ID")
-    DB_SECRET_ACCESS_KEY = os.getenv("DB_SECRET_ACCESS_KEY")
-
+ 
 class Merchant:
     def __init__(self):
         ddb = boto3.resource(
