@@ -1,4 +1,5 @@
 import { FluentThemeProvider, MessageThread } from "@azure/communication-react";
+import { VStack, Center, Image, Text } from "@chakra-ui/react";
 import styled from "styled-components";
 
 import BotChat from "./BotChat";
@@ -6,12 +7,30 @@ import BotChat from "./BotChat";
 const Chat = ({ messages, botStatus }) => {
   return (
     <ChatContainer>
-      <FluentThemeProvider>
-        <MessageThread userId={"1"} messages={messages} />
-      </FluentThemeProvider>
+      {messages.length > 0 ? (
+        <FluentThemeProvider>
+          <MessageThread userId={"1"} messages={messages} />
+        </FluentThemeProvider>
+      ) : (
+        <StartupDisplay />
+      )}
 
       <BotChat status={botStatus} />
     </ChatContainer>
+  );
+};
+
+const StartupDisplay = () => {
+  return (
+    <Center h={"100%"} w={"100%"} color={"white"}>
+      <VStack>
+        <Image
+          src="https://ntibnportal.powerappsportals.com/but.png"
+          alt="ButlerBot Icon"
+        />
+        <Text color="black">Let's start ordering...</Text>
+      </VStack>
+    </Center>
   );
 };
 

@@ -71,23 +71,31 @@ const HomePage = () => {
     setChatMessages([...chatMessages, ...messagesToAdd]);
   };
   const updateCartItems = (response): void => {
-    if (response && response.instructions && response.instructions.action) {
-      const { item_name, price, quantity, action } = response.instructions;
+    if (response && response.instructions) {
+      if (response.instructions.length > 0) {
+        const { action } = response.instructions[0].action;
+        if (action === UserAction.AddToCart) {
+          const updatedItems = [];
 
-      if (action === UserAction.AddToCart) {
-        const itemToAdd = {
-          id: Math.random().toString(),
-          name: item_name,
-          quantity,
-          price,
-        };
+          for (let i = 0; i < response.instructions.length; i++) {
+            const { item_name, price, quantity } = response.instructions[i];
 
-        setCartItems([...cartItems, itemToAdd]);
-        setUserAction(UserAction.AddToCart);
-      } else if (action === UserAction.Checkout) {
-        setUserAction(UserAction.Checkout);
-      } else {
-        console.log("unknown action requested - ", action);
+            const itemToAdd = {
+              id: Math.random().toString(),
+              name: item_name,
+              quantity,
+              price,
+            };
+            updatedItems.push(itemToAdd);
+          }
+
+          setCartItems(updatedItems);
+          setUserAction(UserAction.AddToCart);
+        } else if (action === UserAction.Checkout) {
+          setUserAction(UserAction.Checkout);
+        } else {
+          console.log("unknown action requested - ", action);
+        }
       }
     } else {
       console.log("silently dropping the request - no cart action necessary");
