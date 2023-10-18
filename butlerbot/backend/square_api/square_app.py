@@ -56,9 +56,6 @@ async def create_checkout(checkout_params):
     device_id = checkout_params.get('device_id')
     data = checkout_params.get('data')
 
-    logging.info("Checkout", checkout_params)
-
-
     if None in [access_token, device_id,  data]:
         raise HTTPException(status_code=400, detail="Missing Required Parameters!")
 
@@ -189,15 +186,12 @@ async def authorize_callback(query_params, cookie):
                 merchandise_details_response = square_client.catalog.list_catalog(
                     types = "ITEM"
                 )
-                logging.info("Merchant record added/updated", merchant_obj)
                 
                 merchandise_details = merchandise_details_response.body
-                logging.info("merchandise_detailsobjects", merchandise_details["objects"])
                 if merchandise_details and merchandise_details["objects"]:
                     merchandise_items = merchandise_details["objects"]
                     logging.info("merchandis to add: " + json.dumps(merchandise_items, indent=4))
-                    merchant_merchandise = merchant.add_merchandise(merchant_obj, merchandise_items)
-                    logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
+                    merchant.add_merchandise(merchant_obj, merchandise_items)
 
                     device_details_response = square_client.devices.list_device_codes(location_id=merchant_location_id)
                     device_details = device_details_response.body
