@@ -15,9 +15,7 @@ class Merchant:
     def __init__(self):
         ddb = boto3.resource(
             "dynamodb",
-            region_name=Config.DB_REGION_NAME,
-            aws_access_key_id=Config.DB_ACCESS_KEY_ID,
-            aws_secret_access_key=Config.DB_SECRET_ACCESS_KEY
+            region_name=Config.DB_REGION_NAME
         )
         self.merchant_table = ddb.Table("merchant")
         self.merchandise_table = ddb.Table("merchandise")
