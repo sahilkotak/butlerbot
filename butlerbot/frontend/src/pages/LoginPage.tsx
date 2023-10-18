@@ -11,10 +11,8 @@ import {
 } from "@chakra-ui/react";
 import { BiCheckboxSquare, BiBot } from "react-icons/bi";
 import { setCookie } from "../hooks/useCookie";
-import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
-  const navigate = useNavigate();
   const handleSignInWithDemoAccount = () => {
     setCookie(
       "X-ButlerBot-Active-Session-Token",
@@ -27,7 +25,7 @@ const LoginPage = () => {
     );
     setCookie("X-ButlerBot-Merchant-Loc", process.env.X_ButlerBot_Merchant_Loc);
 
-    navigate("/index.html", { replace: true });
+    window.location.reload();
   };
 
   const handleSignInWithSquare = () => {

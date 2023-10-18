@@ -5,7 +5,7 @@ const BotChat = ({ status }) => {
   return (
     <Center>
       <Image
-        src="https://i.imgur.com/EslQFq9.png"
+        src="https://ntibnportal.powerappsportals.com/but.png"
         alt="ButlerBot Icon"
         boxSize={6}
       />
