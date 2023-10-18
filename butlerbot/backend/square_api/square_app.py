@@ -28,10 +28,12 @@ def authorise():
 
     # create the authorize url with the state
     authorise_url = conduct_authorize_url(state)
-    return RedirectResponse(url=authorise_url, headers={
+    response = RedirectResponse(url=authorise_url, headers={
         'Content-Type': 'text/html',
         'Set-Cookie': cookie_str
     })
+    # response.set_cookie(key="O-Auth-State", value=state, max_age=60, samesite="lax", httponly=True)
+    return response
 
 async def getItems(checkout_params):
     merchant = Merchant()
@@ -78,7 +80,6 @@ async def create_checkout(checkout_params):
                 }
             }
         )
-        logging.info(checkout)
         if checkout.is_success():
             payment_link = checkout.body
             response_data = {"message": "Terminal checkout successful!", "response": payment_link}
@@ -167,6 +168,7 @@ async def authorize_callback(query_params, cookie):
                 merchant_details = merchant_details_response.body
                 merchant_name = merchant_details["merchant"]["business_name"]
                 merchant_location_id = merchant_details["merchant"]["main_location_id"]
+                logging.info("Merch name: " + merchant_name)
 
                 merchant_obj = {
                     "id": merchant_id,

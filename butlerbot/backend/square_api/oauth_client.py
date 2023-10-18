@@ -49,7 +49,7 @@ def conduct_authorize_url(state):
         base_url + '/oauth2/authorize'
         '?client_id=' + client_id +
         '&scope=' + permissions +
-        '&session=' + str(environment == 'sandbox2') +
+        '&session=' + str(environment == 'sandbox') +
         '&state=' + state
     )
     return authorize_url
