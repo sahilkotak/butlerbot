@@ -99,6 +99,8 @@ sudo nano butlerbot.service
 
 # [Service]
 # User=ubuntu
+# Environment="GOOGLE_APPLICATION_CREDENTIALS=~/butlerbotai-credentials.json"
+# Environment="OPENAI_API_KEY=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"
 # WorkingDirectory=/home/ubuntu/butlerbot/butlerbot/backend
 # ExecStart=python3.11 -m uvicorn main:app
 # Restart=always
