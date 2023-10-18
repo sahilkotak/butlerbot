@@ -73,7 +73,7 @@ const HomePage = () => {
   const updateCartItems = (response): void => {
     if (response && response.instructions) {
       if (response.instructions.length > 0) {
-        const { action } = response.instructions[0].action;
+        const { action } = response.instructions[0];
         if (action === UserAction.AddToCart) {
           const updatedItems = [];
 

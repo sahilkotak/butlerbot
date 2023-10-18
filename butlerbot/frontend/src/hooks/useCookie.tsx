@@ -47,3 +47,11 @@ export const getCookie = (cookieName) => {
 
   return null;
 };
+export const setCookie = (cookieName, value) => {
+  if (cookieName && value) {
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 1);
+    const expires = `expires=${expirationDate.toUTCString()}`;
+    document.cookie = `${cookieName}=${value}; ${expires}; path=/`;
+  }
+};

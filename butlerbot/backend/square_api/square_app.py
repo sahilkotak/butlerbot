@@ -56,6 +56,9 @@ async def create_checkout(checkout_params):
     device_id = checkout_params.get('device_id')
     data = checkout_params.get('data')
 
+    logging.info("Checkout", checkout_params)
+
+
     if None in [access_token, device_id,  data]:
         raise HTTPException(status_code=400, detail="Missing Required Parameters!")
 
@@ -74,8 +77,8 @@ async def create_checkout(checkout_params):
                         "device_id": device_id
                     },
                     "amount_money": {
-                        "amount": 20,
-                        "currency": "GBP"
+                        "amount": int(data["amount"] * 100), 
+                        "currency": data["currency"]
                     },
                 }
             }
@@ -182,39 +185,41 @@ async def authorize_callback(query_params, cookie):
                 merchant.add_merchant(merchant_obj=merchant_obj)
                 logging.info("Merchant record added/updated.")
 
-                logging.info("fetching merchandise items")
+
                 merchandise_details_response = square_client.catalog.list_catalog(
                     types = "ITEM"
                 )
+                logging.info("Merchant record added/updated", merchant_obj)
                 
                 merchandise_details = merchandise_details_response.body
+                logging.info("merchandise_detailsobjects", merchandise_details["objects"])
                 if merchandise_details and merchandise_details["objects"]:
                     merchandise_items = merchandise_details["objects"]
                     logging.info("merchandis to add: " + json.dumps(merchandise_items, indent=4))
                     merchant_merchandise = merchant.add_merchandise(merchant_obj, merchandise_items)
-                    # logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
+                    logging.info("Merchandise: " + json.dumps({ "items": merchant_merchandise }, indent=4))
 
                     device_details_response = square_client.devices.list_device_codes(location_id=merchant_location_id)
                     device_details = device_details_response.body
-                    # if device_details and device_details["device_codes"]:
-                    #     device_detail = device_details["device_codes"][0]
-                    #     device_id = device_detail["id"]
+                    if device_details and device_details["device_codes"]:
+                        device_detail = device_details["device_codes"][0]
+                        device_id = device_detail["id"]
 
-                    response = RedirectResponse(
-                        url=client_url,
-                        status_code=302,
-                        headers={
-                            'Content-Type': 'text/html',
-                        }
-                    )
-                    response.set_cookie(key="X-ButlerBot-Active-Session-Token", value=access_token, max_age=time_difference_seconds(expires_at))
-                    response.set_cookie(key="X-ButlerBot-Merchant-Id", value=merchant_id, max_age=time_difference_seconds(expires_at))
-                    response.set_cookie(key="X-ButlerBot-Merchant-Name", value=merchant_name, max_age=time_difference_seconds(expires_at))
-                    response.set_cookie(key="X-ButlerBot-Merchant-Loc", value=merchant_location_id, max_age=time_difference_seconds(expires_at))
-                    # response.set_cookie(key="X-ButlerBot-Merchant-Device-Id", value=device_id, max_age=time_difference_seconds(expires_at))
-                    return response
-                    # else:
-                    #     return JSONResponse(content={"message": "Unfortunately no Terminal device data was found from your Square account. Please try again a different Square account or use our demo ButlerBot Square account."}, status_code=400)
+                        response = RedirectResponse(
+                            url=client_url,
+                            status_code=302,
+                            headers={
+                                'Content-Type': 'text/html',
+                            }
+                        )
+                        response.set_cookie(key="X-ButlerBot-Active-Session-Token", value=access_token, max_age=time_difference_seconds(expires_at))
+                        response.set_cookie(key="X-ButlerBot-Merchant-Id", value=merchant_id, max_age=time_difference_seconds(expires_at))
+                        response.set_cookie(key="X-ButlerBot-Merchant-Name", value=merchant_name, max_age=time_difference_seconds(expires_at))
+                        response.set_cookie(key="X-ButlerBot-Merchant-Loc", value=merchant_location_id, max_age=time_difference_seconds(expires_at))
+                        response.set_cookie(key="X-ButlerBot-Merchant-Device-Id", value=device_id, max_age=time_difference_seconds(expires_at))
+                        return response
+                    else:
+                        return JSONResponse(content={"message": "Unfortunately no Terminal device data was found from your Square account. Please try again a different Square account or use our demo ButlerBot Square account."}, status_code=400)
                 else:
                     return JSONResponse(content={"message": "Unfortunately no merchandise data was found from your Square account. Please try again a different Square account or use our demo ButlerBot Square account."}, status_code=400)
             except Exception as e:

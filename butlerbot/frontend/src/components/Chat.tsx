@@ -1,5 +1,5 @@
 import { FluentThemeProvider, MessageThread } from "@azure/communication-react";
-import { VStack, Center, Image, Text } from "@chakra-ui/react";
+import { VStack, Center, Image, Text, Highlight } from "@chakra-ui/react";
 import styled from "styled-components";
 
 import BotChat from "./BotChat";
@@ -28,7 +28,18 @@ const StartupDisplay = () => {
           src="https://ntibnportal.powerappsportals.com/but.png"
           alt="ButlerBot Icon"
         />
-        <Text color="black">Let's start ordering...</Text>
+        <Text fontWeight="400" fontSize={"sm"} color="black" as="em">
+          <Highlight
+            query={["AI drive-through assistant"]}
+            styles={{ px: "2", py: "1", rounded: "full", bg: "blue.100" }}
+          >
+            Hi, I'm ButlerBot, the AI drive-through assistant of the future.
+          </Highlight>
+        </Text>
+        <Text fontWeight="400" fontSize={"sm"} color="black" as="em">
+          Don't worry, talking to me is easy - and I won't judge your food
+          choices!
+        </Text>
       </VStack>
     </Center>
   );
