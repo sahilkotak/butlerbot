@@ -67,6 +67,7 @@ async def checkout( data: dict, authorization: str = Header(None), deviceId: str
         "device_id": deviceId,
         "data": data,
     }
+    logging.info("Checkout", checkout_params)
     return await create_checkout(checkout_params)
 
 @app.get("/get-menu")

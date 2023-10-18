@@ -1,5 +1,6 @@
 import os
 import logging
+from decimal import Decimal
 import boto3
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Attr
@@ -136,7 +137,7 @@ class Merchant:
                 )) > 0)
 
                 if merch_item["is_deleted"] == False and merch_variant["is_deleted"] == False and item_available_in_main_loc and merch_variant["item_variation_data"]["pricing_type"] == "FIXED_PRICING" and merch_variant["item_variation_data"]["sellable"] == True:
-                    item["price"] = merch_variant["item_variation_data"]["price_money"]["amount"] / 100
+                    item["price"] = Decimal(str(merch_variant["item_variation_data"]["price_money"]["amount"] / 100))
                     item["currency"] = merch_variant["item_variation_data"]["price_money"]["currency"]
                     logging.info("Merch record ids: %s (PK) | %s (SK) | %s", item["merchant_id"], item["merchandise_id"], item["variation_name"])
                     
